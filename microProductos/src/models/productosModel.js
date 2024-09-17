@@ -24,7 +24,7 @@ async function traerProducto(product_id) {
 
 
 async function actualizarProducto(product_id, product_stock) {
-    const result = await connection.query('UPDATE productos SET product_stock = ? WHERE product_stock = ?', [product_stock,product_id]);
+    const result = await connection.query('UPDATE productos SET product_stock = ? WHERE product_id = ?', [product_stock,product_id]);
     return result;
 }
 
