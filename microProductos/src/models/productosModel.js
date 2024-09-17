@@ -1,13 +1,14 @@
 const mysql = require('mysql2/promise');
 
 
-// const connection = mysql.createPool({
-//     host: 'localhost',
-//     user: 'root',
-//     password: '',
-//     port:'3307',
-//     database: 'productosDB'
-// });
+const connection = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    port:'3307',
+    database: 'productos_BD'
+});
+
 
 
 async function traerProductos() {
@@ -16,26 +17,26 @@ async function traerProductos() {
 }
 
 
-async function traerProducto(id) {
-    const result = await connection.query('SELECT * FROM productos WHERE id = ?', id);
+async function traerProducto(product_id) {
+    const result = await connection.query('SELECT * FROM productos WHERE product_id= ?', product_id);
     return result[0];
 }
 
 
-async function actualizarProducto(id, inventario) {
-    const result = await connection.query('UPDATE productos SET inventario = ? WHERE id = ?', [inventario, id]);
+async function actualizarProducto(product_id, product_stock) {
+    const result = await connection.query('UPDATE productos SET product_stock = ? WHERE product_stock = ?', [product_id,product_stock]);
     return result;
 }
 
 
-async function crearProducto(nombre, precio, inventario) {
-    const result = await connection.query('INSERT INTO productos VALUES(null,?,?,?,?)', [nombre,categoria, precio, inventario]);
+async function crearProducto(product_category,product_name,product_stock, unit_price_cop) {
+    const result = await connection.query('INSERT INTO productos VALUES(null,?,?,?,?)', [product_category,product_name,product_stock, unit_price_cop]);
     return result;
 }
 
 
-async function borrarProducto(id) {
-    const result = await connection.query('DELETE FROM productos WHERE id = ?', id);
+async function borrarProducto(product_id) {
+    const result = await connection.query('DELETE FROM productos WHERE id = ?', product_id);
     return result[0];
 }
 
