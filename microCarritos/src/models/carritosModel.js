@@ -29,7 +29,7 @@ async function agregarACarrito(username, product, quantity) {
     // Obtener el precio del producto desde la API
     let productPrice;
     try {
-        const productoResponse = await axios.get(`http://localhost/productos/${product.id}`);
+        const productoResponse = await axios.get(`http://localhost:3002/productos/${product.id}`);
         productPrice = productoResponse.data.precio;
     } catch (error) {
         throw new Error('No se pudo obtener el precio del producto.');
@@ -77,7 +77,7 @@ async function guardarCarrito(carrito) {
         const { producto_id, cantidad } = item;
 
         // Obtener información del producto desde la API
-        const productoResponse = await axios.get(`http://localhost/productos/${producto_id}`);
+        const productoResponse = await axios.get(`http://localhost:3002/productos/${producto_id}`);
         const producto = productoResponse.data;
 
         // Obtener el precio del producto desde la API
@@ -95,7 +95,7 @@ async function agregarACarrito(username, product, quantity) {
     // Obtener el precio del producto desde la API
     let productPrice;
     try {
-        const productoResponse = await axios.get(`http://localhost/productos/${product.id}`);
+        const productoResponse = await axios.get(`http://localhost:3002/productos/${product.id}`);
         productPrice = productoResponse.data.precio;
     } catch (error) {
         throw new Error('No se pudo obtener el precio del producto.');
@@ -159,7 +159,7 @@ async function crearFactura(username, cart) {
     // Obtener la información del usuario desde la API
     let user;
     try {
-        const userResponse = await axios.get(`http://localhost/usuarios/${username}`);
+        const userResponse = await axios.get(`http://localhost:3001/usuarios/${username}`);
         user = userResponse.data;
     } catch (error) {
         throw new Error('No se pudo obtener la información del usuario.');
