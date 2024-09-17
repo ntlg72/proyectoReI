@@ -33,10 +33,11 @@ router.post('/productos', async (req, res) => {
 
 
 router.put('/productos/:product_id', async (req, res) => {
-    const product_id = req.body.product_id;
+    
     const product_stock = req.params.product_stock;
+    const product_id = req.body.product_id;
 
-    var result = await productosModel.actualizarProducto(product_id,product_stock);
+    var result = await productosModel.actualizarProducto(product_id, product_stock);
     res.send("inventario actualizado");
 });
 
