@@ -14,6 +14,26 @@ const connection = mysql.createPool({
 //     return result;
 // }
 
+async function createCartIfNotExists(username) {
+    // Verificar la existencia del usuario a través de la API externa
+    try {
+        await axios.get(`http://localhost:3001/usuarios/${username}`);
+    } catch (error) {
+        throw new Error('El usuario no existe o no se pudo verificar la existencia del usuario.');
+    }
+
+    // Verificar si el carrito ya existe para el usuario
+    const [existingCart] = await db.query('SELECT id FROM carritos WHERE usuario_id = ?', [username]);
+
+    if (existingCart.length === 0) {
+        // Crear un nuevo carrito vacío
+        const [result] = await db.query('INSERT INTO carritos (usuario_id, subtotal, precioEnvio, total) VALUES (?, 0, 0, 0)', [username]);
+        return result.insertId; // Retornar el ID del carrito creado
+    }
+
+    return existingCart[0].id; // Retornar el ID del carrito existente
+}
+
 async function traerCarrito(id_carrito) {
     const result = await connection.query('SELECT * FROM carritos WHERE id_carrito = ?', id_carrito);
     return result[0];
@@ -191,4 +211,5 @@ module.exports = {
     removeFromCart,
     agregarACarrito,
     guardarCarrito,
+    createCartIfNotExists
 };

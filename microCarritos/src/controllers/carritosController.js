@@ -109,6 +109,18 @@ router.get('/carritos', async (req, res) => {
 //         res.status(500).json({ message: 'Error al crear la orden.' });
 //     }
 // });
+// Ruta para crear un carrito vacío (puede ser usado por otras APIs o directamente si se necesita)
+router.post('/create', async (req, res) => {
+    const { username } = req.body;
+
+    try {
+        const cartId = await createCartIfNotExists(username);
+        res.status(200).json({ message: 'Carrito creado', cartId });
+    } catch (error) {
+        console.error('Error al crear el carrito:', error.message);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+});
 
 router.post('/carrito', async (req, res) => {
     try {
