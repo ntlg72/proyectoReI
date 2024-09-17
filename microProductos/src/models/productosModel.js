@@ -36,7 +36,7 @@ async function crearProducto(product_category,product_name,product_stock, unit_p
 
 
 async function borrarProducto(product_id) {
-    const result = await connection.query('DELETE FROM productos WHERE id = ?', product_id);
+    const result = await connection.query('DELETE FROM productos WHERE product_id = ?', product_id);
     return result[0];
 }
 
