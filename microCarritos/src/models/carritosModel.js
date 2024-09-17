@@ -45,43 +45,43 @@ async function traerCarritos() {
     return result[0];
 }
 
-async function agregarACarrito(username, product, quantity) {
-    // Obtener el precio del producto desde la API
-    let productPrice;
-    try {
-        const productoResponse = await axios.get(`http://localhost:3002/productos/${product.id}`);
-        productPrice = productoResponse.data.precio;
-    } catch (error) {
-        throw new Error('No se pudo obtener el precio del producto.');
-    }
+// async function agregarACarrito(username, product, quantity) {
+//     // Obtener el precio del producto desde la API
+//     let productPrice;
+//     try {
+//         const productoResponse = await axios.get(`http://localhost:3002/productos/${product.id}`);
+//         productPrice = productoResponse.data.precio;
+//     } catch (error) {
+//         throw new Error('No se pudo obtener el precio del producto.');
+//     }
 
-    // Verificar si el carrito del usuario ya existe
-    const existingCart = await db.query('SELECT * FROM carritos WHERE usuario_id = ?', [username]);
+//     // Verificar si el carrito del usuario ya existe
+//     const existingCart = await db.query('SELECT * FROM carritos WHERE usuario_id = ?', [username]);
 
-    let carritoId;
-    if (existingCart.length) {
-        // Obtener el ID del carrito existente
-        carritoId = existingCart[0].id;
-    } else {
-        // Crear un nuevo carrito si no existe
-        const result = await db.query('INSERT INTO carritos (subtotal, precioEnvio, total, usuario_id) VALUES (0, 0, 0, ?)', [username]);
-        carritoId = result.insertId;
-    }
+//     let carritoId;
+//     if (existingCart.length) {
+//         // Obtener el ID del carrito existente
+//         carritoId = existingCart[0].id;
+//     } else {
+//         // Crear un nuevo carrito si no existe
+//         const result = await db.query('INSERT INTO carritos (subtotal, precioEnvio, total, usuario_id) VALUES (0, 0, 0, ?)', [username]);
+//         carritoId = result.insertId;
+//     }
 
-    // Verificar si el producto ya está en el carrito
-    const existingProduct = await db.query('SELECT * FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, product.id]);
+//     // Verificar si el producto ya está en el carrito
+//     const existingProduct = await db.query('SELECT * FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, product.id]);
 
-    if (existingProduct.length) {
-        // Si existe, actualizar la cantidad
-        await db.query('UPDATE items_carrito SET cantidad = cantidad + ? WHERE carrito_id = ? AND producto_id = ?', [quantity, carritoId, product.id]);
-    } else {
-        // Si no existe, insertar el nuevo producto en el carrito
-        await db.query('INSERT INTO items_carrito (carrito_id, producto_id, precio, cantidad) VALUES (?, ?, ?, ?)', [carritoId, product.id, productPrice, quantity]);
-    }
+//     if (existingProduct.length) {
+//         // Si existe, actualizar la cantidad
+//         await db.query('UPDATE items_carrito SET cantidad = cantidad + ? WHERE carrito_id = ? AND producto_id = ?', [quantity, carritoId, product.id]);
+//     } else {
+//         // Si no existe, insertar el nuevo producto en el carrito
+//         await db.query('INSERT INTO items_carrito (carrito_id, producto_id, precio, cantidad) VALUES (?, ?, ?, ?)', [carritoId, product.id, productPrice, quantity]);
+//     }
 
-    // Opcionalmente, puedes retornar un mensaje de éxito o el carrito actualizado
-    return { message: 'Producto añadido al carrito' };
-}
+//     // Opcionalmente, puedes retornar un mensaje de éxito o el carrito actualizado
+//     return { message: 'Producto añadido al carrito' };
+//}
 
 async function guardarCarrito(carrito) {
     const { subtotal, precioEnvio, total, usuario_id, items } = carrito;
@@ -116,7 +116,7 @@ async function agregarACarrito(username, product, quantity) {
     let productPrice;
     try {
         const productoResponse = await axios.get(`http://localhost:3002/productos/${product.id}`);
-        productPrice = productoResponse.data.precio;
+        productPrice = productoResponse.data.unit_price_cop;
     } catch (error) {
         throw new Error('No se pudo obtener el precio del producto.');
     }

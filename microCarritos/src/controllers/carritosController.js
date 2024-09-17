@@ -144,7 +144,7 @@ router.post('/carrito/add', async (req, res) => {
             return res.status(400).json({ message: 'Faltan datos necesarios' });
         }
 
-        const result = await agregarACarrito(username, product, quantity);
+        const result = await carritosModel.agregarACarrito(username, product, quantity);
         res.status(200).json(result);
     } catch (error) {
         console.error('Error al agregar el producto al carrito:', error);
