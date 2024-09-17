@@ -1,23 +1,23 @@
 const mysql = require('mysql2/promise');
 
-// //const connection = mysql.createPool({
-//     host: 'localhost',
-//     user: 'root',
-//     password: '',
-//     port:'3307',
-//     database: 'usuariosDB'
-// });
-// //
+const connection = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    port:'3307',
+    database: 'usuarios_BD'
+});
 
 
-async function traerUsuario(usuario) {
-    const result = await connection.query('SELECT * FROM usuarios WHERE usuario = ?', usuario);
+
+async function traerUsuario(username) {
+    const result = await connection.query('SELECT * FROM usuarios WHERE username = ?', username);
     return result[0];
 }
 
 
-async function validarUsuario(usuario, password) {
-    const result = await connection.query('SELECT * FROM usuarios WHERE usuario = ? AND password = ?', [usuario, password]);
+async function validarUsuario(username, password) {
+    const result = await connection.query('SELECT * FROM usuarios WHERE username = ? AND password = ?', [username, password]);
     return result[0];
 }
 
