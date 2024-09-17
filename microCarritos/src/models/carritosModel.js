@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise');
+const axios = require('axios');
 
 
 const connection = mysql.createPool({
@@ -23,11 +24,11 @@ async function createCartIfNotExists(username) {
     }
 
     // Verificar si el carrito ya existe para el usuario
-    const [existingCart] = await db.query('SELECT id FROM carritos WHERE usuario_id = ?', [username]);
+    const [existingCart] = await connection.query('SELECT id FROM carritos WHERE usuario_id = ?', [username]);
 
     if (existingCart.length === 0) {
         // Crear un nuevo carrito vacío
-        const [result] = await db.query('INSERT INTO carritos (usuario_id, subtotal, precioEnvio, total) VALUES (?, 0, 0, 0)', [username]);
+        const [result] = await connection.query('INSERT INTO carritos (usuario_id, subtotal, precioEnvio, total) VALUES (?, 0, 0, 0)', [username]);
         return result.insertId; // Retornar el ID del carrito creado
     }
 
@@ -56,7 +57,7 @@ async function traerCarritos() {
 //     }
 
 //     // Verificar si el carrito del usuario ya existe
-//     const existingCart = await db.query('SELECT * FROM carritos WHERE usuario_id = ?', [username]);
+//     const existingCart = await connection.query('SELECT * FROM carritos WHERE usuario_id = ?', [username]);
 
 //     let carritoId;
 //     if (existingCart.length) {
@@ -64,19 +65,19 @@ async function traerCarritos() {
 //         carritoId = existingCart[0].id;
 //     } else {
 //         // Crear un nuevo carrito si no existe
-//         const result = await db.query('INSERT INTO carritos (subtotal, precioEnvio, total, usuario_id) VALUES (0, 0, 0, ?)', [username]);
+//         const result = await connection.query('INSERT INTO carritos (subtotal, precioEnvio, total, usuario_id) VALUES (0, 0, 0, ?)', [username]);
 //         carritoId = result.insertId;
 //     }
 
 //     // Verificar si el producto ya está en el carrito
-//     const existingProduct = await db.query('SELECT * FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, product.id]);
+//     const existingProduct = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, product.id]);
 
 //     if (existingProduct.length) {
 //         // Si existe, actualizar la cantidad
-//         await db.query('UPDATE items_carrito SET cantidad = cantidad + ? WHERE carrito_id = ? AND producto_id = ?', [quantity, carritoId, product.id]);
+//         await connection.query('UPDATE items_carrito SET cantidad = cantidad + ? WHERE carrito_id = ? AND producto_id = ?', [quantity, carritoId, product.id]);
 //     } else {
 //         // Si no existe, insertar el nuevo producto en el carrito
-//         await db.query('INSERT INTO items_carrito (carrito_id, producto_id, precio, cantidad) VALUES (?, ?, ?, ?)', [carritoId, product.id, productPrice, quantity]);
+//         await connection.query('INSERT INTO items_carrito (carrito_id, producto_id, precio, cantidad) VALUES (?, ?, ?, ?)', [carritoId, product.id, productPrice, quantity]);
 //     }
 
 //     // Opcionalmente, puedes retornar un mensaje de éxito o el carrito actualizado
@@ -111,47 +112,107 @@ async function guardarCarrito(carrito) {
     return result;
 }
 
-async function agregarACarrito(username, product, quantity) {
-    // Obtener el precio del producto desde la API
-    let productPrice;
+async function obtenerCiudadUsuario(username) {
+    // Obtener la información del usuario desde la API o base de datos externa
     try {
-        const productoResponse = await axios.get(`http://localhost:3002/productos/${product.id}`);
-        productPrice = productoResponse.data.unit_price_cop;
+        const usuarioResponse = await axios.get(`http://localhost:3001/usuarios/${username}`);
+        const usuario = usuarioResponse.data;
+
+        if (!usuario || !usuario.customer_city) {
+            throw new Error('Usuario o ciudad no encontrada.');
+        }
+
+        return usuario.customer_city;
     } catch (error) {
-        throw new Error('No se pudo obtener el precio del producto.');
+        console.error('Error al obtener la ciudad del usuario:', error.message);
+        throw new Error('No se pudo obtener la ciudad del usuario.');
     }
+}
 
-    // Verificar si el carrito del usuario ya existe
-    const existingCart = await db.query('SELECT * FROM carritos WHERE usuario_id = ?', [username]);
+const obtenerPrecioEnvio = (ciudad) => {
+    const preciosEnvio = {
+        'Bogotá': 5000,
+        'Medellín': 6000,
+        'Cali': 7000,
+        'Cartagena': 8000,
+    };
+    return preciosEnvio[ciudad] || 10000; // Precio por defecto si la ciudad no está en la lista
+};
 
-    let carritoId;
-    if (existingCart.length) {
-        // Obtener el ID del carrito existente
-        carritoId = existingCart[0].id;
-    } else {
-        // Crear un nuevo carrito si no existe
-        const result = await db.query('INSERT INTO carritos (subtotal, precioEnvio, total, usuario_id) VALUES (0, 0, 0, ?)', [username]);
-        carritoId = result.insertId;
+async function actualizarCarrito(carritoId, username) {
+    try {
+        // Obtener todos los productos en el carrito
+        const [items] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ?', [carritoId]);
+
+        // Calcular el subtotal
+        const subtotal = items.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
+
+        // Obtener la ciudad del usuario para calcular el valor de envío
+        const ciudad = await obtenerCiudadUsuario(username);
+
+        // Obtener el precio de envío basado en la ciudad
+        const valorEnvio = obtenerPrecioEnvio(ciudad);
+
+        // Calcular el total
+        const total = subtotal + valorEnvio;
+
+        // Actualizar el carrito en la base de datos
+        await connection.query('UPDATE carritos SET subtotal = ?, precioEnvio = ?, total = ? WHERE id_carrito = ?', [subtotal, valorEnvio, total, carritoId]);
+
+        console.log('Carrito actualizado correctamente');
+    } catch (error) {
+        console.error('Error al actualizar el carrito:', error.message);
+        throw new Error('No se pudo actualizar el carrito.');
     }
+}
 
-    // Verificar si el producto ya está en el carrito
-    const existingProduct = await db.query('SELECT * FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, product.id]);
+async function agregarACarrito(username, product, quantity) {
+    try {
+        // Obtener el precio del producto desde la API
+        const productoResponse = await axios.get(`http://localhost:3002/productos/${product.id}`);
+        const productPrice = productoResponse.data.unit_price_cop;
 
-    if (existingProduct.length) {
-        // Si existe, actualizar la cantidad
-        await db.query('UPDATE items_carrito SET cantidad = cantidad + ? WHERE carrito_id = ? AND producto_id = ?', [quantity, carritoId, product.id]);
-    } else {
-        // Si no existe, insertar el nuevo producto en el carrito
-        await db.query('INSERT INTO items_carrito (carrito_id, producto_id, precio, cantidad) VALUES (?, ?, ?, ?)', [carritoId, product.id, productPrice, quantity]);
+        if (!productPrice) {
+            throw new Error('El precio del producto es nulo o indefinido.');
+        }
+
+        // Verificar si el carrito del usuario ya existe
+        const [existingCart] = await connection.query('SELECT id_carrito FROM carritos WHERE username = ?', [username]);
+
+        let carritoId;
+        if (existingCart.length) {
+            // Obtener el ID del carrito existente
+            carritoId = existingCart[0].id_carrito;
+        } else {
+            // Crear un nuevo carrito si no existe
+            const [result] = await connection.query('INSERT INTO carritos (subtotal, precioEnvio, total, username) VALUES (?, ?, ?, ?)', [0, 0, 0, username]);
+            carritoId = result.insertId;
+        }
+
+        // Verificar si el producto ya está en el carrito
+        const [existingProduct] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, product.id]);
+
+        if (existingProduct.length) {
+            // Si existe, actualizar la cantidad
+            await connection.query('UPDATE items_carrito SET cantidad = cantidad + ? WHERE carrito_id = ? AND producto_id = ?', [quantity, carritoId, product.id]);
+        } else {
+            // Si no existe, insertar el nuevo producto en el carrito
+            await connection.query('INSERT INTO items_carrito (carrito_id, producto_id, precio, cantidad) VALUES (?, ?, ?, ?)', [carritoId, product.id, productPrice, quantity]);
+        }
+
+        // Actualizar el carrito con el nuevo subtotal, valor de envío y total
+        await actualizarCarrito(carritoId, username);
+
+        return { message: 'Producto añadido al carrito' };
+    } catch (error) {
+        console.error('Error al agregar el producto al carrito:', error.message);
+        throw new Error('No se pudo agregar el producto al carrito.');
     }
-
-    // Opcionalmente, puedes retornar un mensaje de éxito o el carrito actualizado
-    return { message: 'Producto añadido al carrito' };
 }
 
 async function removeFromCart(username, productId) {
     // Obtener el carrito del usuario
-    const existingCart = await db.query('SELECT * FROM carritos WHERE usuario_id = ?', [username]);
+    const existingCart = await connection.query('SELECT * FROM carritos WHERE usuario_id = ?', [username]);
 
     if (existingCart.length === 0) {
         throw new Error('El carrito del usuario no existe.');
@@ -160,7 +221,7 @@ async function removeFromCart(username, productId) {
     const carritoId = existingCart[0].id;
 
     // Eliminar el producto del carrito del usuario
-    await db.query('DELETE FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, productId]);
+    await connection.query('DELETE FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, productId]);
 
     // Opcional: Actualizar el subtotal, precio de envío y total del carrito si es necesario
 
@@ -186,7 +247,7 @@ async function crearFactura(username, cart) {
     }
 
     // Crear la factura en la base de datos
-    const facturaResult = await db.query('INSERT INTO factura (user_id, email, nombre, ciudad, direccion, documento_identidad, subtotal, precio_envio, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+    const facturaResult = await connection.query('INSERT INTO factura (user_id, email, nombre, ciudad, direccion, documento_identidad, subtotal, precio_envio, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 
         [username, user.email, user.nombre, user.ciudad, user.direccion, user.documento_identidad, subtotal, precioEnvio, total]);
 
     // Obtener el ID de la factura creada
@@ -194,13 +255,13 @@ async function crearFactura(username, cart) {
 
     // Insertar los productos en la tabla de factura_items
     for (const item of cart) {
-        await db.query('INSERT INTO factura_items (factura_id, product_id, name, price, quantity) VALUES (?, ?, ?, ?, ?)', 
+        await connection.query('INSERT INTO factura_items (factura_id, product_id, name, price, quantity) VALUES (?, ?, ?, ?, ?)', 
             [facturaId, item.product_id, item.name, item.price, item.quantity]);
     }
 
     // Vaciar el carrito del usuario y eliminar los items asociados
-    await db.query('DELETE FROM items_carrito WHERE carrito_id IN (SELECT id FROM carritos WHERE usuario_id = ?)', [username]);
-    await db.query('DELETE FROM carritos WHERE usuario_id = ?', [username]);
+    await connection.query('DELETE FROM items_carrito WHERE carrito_id IN (SELECT id FROM carritos WHERE usuario_id = ?)', [username]);
+    await connection.query('DELETE FROM carritos WHERE usuario_id = ?', [username]);
 
     return { message: 'Factura creada y carrito vaciado correctamente', facturaId };
 }
@@ -211,5 +272,7 @@ module.exports = {
     removeFromCart,
     agregarACarrito,
     guardarCarrito,
-    createCartIfNotExists
+    createCartIfNotExists,
+    actualizarCarrito,
+    obtenerPrecioEnvio
 };

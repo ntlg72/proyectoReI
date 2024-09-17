@@ -5,7 +5,7 @@ const carritosModel = require('../models/carritosModel');
 
 
 router.get('/carritos/:id_carrito', async (req, res) => {
-    const id = req.params.id;
+    const id_carrito = req.params.id_carrito;
     var result;
     result = await carritosModel.traerCarrito(id_carrito);
     res.json(result[0]);
@@ -42,15 +42,15 @@ router.get('/carritos', async (req, res) => {
 // });
 
 
-// const obtenerPrecioEnvio = (ciudad) => {
-//     const preciosEnvio = {
-//         'Bogotá': 5000,
-//         'Medellín': 6000,
-//         'Cali': 7000,
-//         'Cartagena': 8000,
-//     };
-//     return preciosEnvio[ciudad] || 10000; // Precio por defecto si la ciudad no está en el JSON
-// };
+const obtenerPrecioEnvio = (ciudad) => {
+    const preciosEnvio = {
+        'Bogotá': 5000,
+        'Medellín': 6000,
+        'Cali': 7000,
+        'Cartagena': 8000,
+    };
+    return preciosEnvio[ciudad] || 10000; // Precio por defecto si la ciudad no está en el JSON
+};
 
 
 
@@ -165,8 +165,8 @@ router.delete('/carrito/remove', async (req, res) => {
         res.status(200).json(updatedCart);
     } catch (error) {
         console.error('Error al eliminar el producto del carrito:', error);
-        res.status(500).json({ message: 'Error interno del servidor'});
-    }
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
 });
 router.post('/factura', async (req, res) => {
     try {
@@ -180,8 +180,8 @@ router.post('/factura', async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         console.error('Error al crear la factura:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
-    }
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
 });
 
 router.post('/factura', async (req, res) => {
@@ -196,8 +196,8 @@ router.post('/factura', async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         console.error('Error al crear la factura:', error.message);
-        res.status(500).json({ message: 'Error interno del servidor' });
-    }
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
 });
 
 
