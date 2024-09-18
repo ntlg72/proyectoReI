@@ -37,6 +37,6 @@ router.post('/login', async (req, res) => {
     } else {
         res.status(401).json({ message: 'Credenciales inválidas' });
     }
-});
+}); 
 
 module.exports = router;
