@@ -19,6 +19,8 @@ router.get('/usuarios/:username/:password', async (req, res) => {
     res.json(result);
 });
 
+const axios = require('axios');
+
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -27,8 +29,14 @@ router.post('/login', async (req, res) => {
 
     if (user) {
         try {
-            // Crear un carrito vacío si no existe
-            const cartId = await createCartIfNotExists(username);
+            // Hacer la solicitud a la API que contiene createCartIfNotExists
+            const response = await axios.post('http://localhost:3003/create', {
+                username
+            });
+
+            // Obtener el ID del carrito desde la respuesta de la API
+            const cartId = response.data.cartId;
+
             res.status(200).json({ message: 'Login exitoso', cartId });
         } catch (error) {
             console.error('Error al crear el carrito:', error.message);
@@ -37,6 +45,7 @@ router.post('/login', async (req, res) => {
     } else {
         res.status(401).json({ message: 'Credenciales inválidas' });
     }
-}); 
+});
+
 
 module.exports = router;
