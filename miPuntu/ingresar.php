@@ -1,38 +1,41 @@
 <?php
-    $user=$_POST["usuario"];
-    $pass=$_POST["password"];
+    $user = $_POST["usuario"];
+    $pass = $_POST["password"];
 
-    $servurl="http://localhost:3001/usuarios/$user/$pass";
-    $curl=curl_init($servurl);
+    $servurl = "http://localhost:3001/login";
+
+    $data = json_encode(array(
+        "username" => $user,
+        "password" => $pass
+    ));
+
+    $curl = curl_init($servurl);
 
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    $response=curl_exec($curl);
+    curl_setopt($curl, CURLOPT_POST, true);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+
+    $response = curl_exec($curl);
     curl_close($curl);
 
-    if ($response===false){
+    if ($response === false) {
         header("Location:index.html");
     }
 
     $resp = json_decode($response);
 
-    if (count($resp) != 0){
+    if (count($resp) != 0) {
         session_start();
-        $_SESSION["usuario"]=$user;
-        if ($user == "admin1"){ 
+        $_SESSION["usuario"] = $user;
+        if ($user == "admin") { 
             echo "admin";
             header("Location:admin.php");
-        } 
-        else { 
+        } else { 
             echo "usuario";
             header("Location:usuario.php");
         } 
+    } else {
+        header("Location:index.html"); 
     }
-    else {
-    header("Location:index.html"); 
-    }
-
 ?>
-
-
-
-
