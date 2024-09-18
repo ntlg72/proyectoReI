@@ -160,21 +160,7 @@ router.post('/carrito/add', async (req, res) => {
 });
 
 
-router.delete('/carrito/remove', async (req, res) => {
-    try {
-        const { username, productId } = req.body;
 
-        if (!username || !productId) {
-            return res.status(400).json({ message: 'Faltan datos necesarios' });
-        }
-
-        const updatedCart = await removeFromCart(username, productId);
-        res.status(200).json(updatedCart);
-    } catch (error) {
-        console.error('Error al eliminar el producto del carrito:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
-    }
-});
 router.post('/factura', async (req, res) => {
     try {
         const { username, cart } = req.body;
@@ -205,6 +191,16 @@ router.post('/factura', async (req, res) => {
         console.error('Error al crear la factura:', error.message);
         res.status(500).json({ message: 'Error interno del servidor' });
     }
+});
+
+router.delete('/carrito/eliminar', async (req, res) => {
+    const { username, productId } = req.body;
+    try {
+        const response = await carritosModel.eliminarDeCarrito(username, productId);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 

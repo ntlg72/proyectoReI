@@ -216,7 +216,7 @@ async function agregarACarrito(username, product, quantity) {
 
 async function removeFromCart(username, productId) {
     // Obtener el carrito del usuario
-    const existingCart = await connection.query('SELECT * FROM carritos WHERE usuario_id = ?', [username]);
+    const existingCart = await connection.query('SELECT * FROM carritos WHERE username = ?', [username]);
 
     if (existingCart.length === 0) {
         throw new Error('El carrito del usuario no existe.');
@@ -269,6 +269,39 @@ async function crearFactura(username, cart) {
 
     return { message: 'Factura creada y carrito vaciado correctamente', facturaId };
 }
+
+async function eliminarDeCarrito(username, productId) {
+    try {
+        // Verificar si el carrito del usuario existe
+        const [existingCart] = await connection.query('SELECT id_carrito FROM carritos WHERE username = ?', [username]);
+
+        if (!existingCart.length) {
+            throw new Error('No se encontró un carrito para este usuario.');
+        }
+
+        const carritoId = existingCart[0].id_carrito;
+
+        // Verificar si el producto está en el carrito
+        const [existingProduct] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, productId]);
+
+        if (!existingProduct.length) {
+            throw new Error('El producto no existe en el carrito.');
+        }
+
+        // Eliminar el producto del carrito
+        await connection.query('DELETE FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, productId]);
+
+        // Actualizar el carrito después de la eliminación
+        await actualizarCarrito(carritoId, username);
+
+        return { message: 'Producto eliminado del carrito' };
+    } catch (error) {
+        console.error('Error al eliminar el producto del carrito:', error.message);
+        throw new Error('No se pudo eliminar el producto del carrito.');
+    }
+}
+
+
 module.exports = {
     crearFactura,
     traerCarrito,
@@ -278,5 +311,6 @@ module.exports = {
     guardarCarrito,
     createCartIfNotExists,
     actualizarCarrito,
-    obtenerPrecioEnvio
+    obtenerPrecioEnvio,
+    eliminarDeCarrito,
 };
