@@ -110,17 +110,24 @@ const obtenerPrecioEnvio = (ciudad) => {
 //     }
 // });
 // Ruta para crear un carrito vacío (puede ser usado por otras APIs o directamente si se necesita)
+// Ruta para crear el carrito
 router.post('/create', async (req, res) => {
     const { username } = req.body;
 
+    // Verificar si el username es null o undefined
+    if (!username) {
+        return res.status(400).json({ message: 'El username es obligatorio.' });
+    }
+
     try {
-        const cartId = await createCartIfNotExists(username);
+        const cartId = await carritosModel.createCartIfNotExists(username);
         res.status(200).json({ message: 'Carrito creado', cartId });
     } catch (error) {
         console.error('Error al crear el carrito:', error.message);
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 });
+
 
 router.post('/carrito', async (req, res) => {
     try {
