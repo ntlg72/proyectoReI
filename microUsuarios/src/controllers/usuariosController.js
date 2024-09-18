@@ -2,14 +2,12 @@ const { Router } = require('express');
 const router = Router();
 const usuariosModel = require('../models/usuariosModel');
 
-
 router.get('/usuarios/:username', async (req, res) => {
     const username = req.params.username;
     var result;
     result = await usuariosModel.traerUsuario(username) ;
     res.json(result[0]);
 });
-
 
 router.get('/usuarios/:username/:password', async (req, res) => {
     const username = req.params.username;
@@ -18,8 +16,6 @@ router.get('/usuarios/:username/:password', async (req, res) => {
     result = await usuariosModel.validarUsuario(username, password) ;
     res.json(result);
 });
-
-const axios = require('axios');
 
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -46,6 +42,5 @@ router.post('/login', async (req, res) => {
         res.status(401).json({ message: 'Credenciales inválidas' });
     }
 });
-
 
 module.exports = router;
