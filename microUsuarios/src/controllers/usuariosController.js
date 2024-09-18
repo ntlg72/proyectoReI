@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const router = Router();
+const axios = require('axios');
 const usuariosModel = require('../models/usuariosModel');
 
 router.get('/usuarios/:username', async (req, res) => {
