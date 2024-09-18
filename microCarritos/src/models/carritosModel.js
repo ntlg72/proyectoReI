@@ -235,10 +235,13 @@ async function removeFromCart(username, productId) {
     return updatedCart;
 }
 
-async function crearFactura(username, cart) {
+async function crearFactura(username, cartId) {
+    // Obtener los productos del carrito desde la base de datos
+    const [cartItems] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ?', [cartId]);
+
     // Calcular el subtotal
-    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const precioEnvio = obtenerPrecioEnvio(cart); // Suponiendo que tienes una función para calcular el costo de envío
+    const subtotal = cartItems.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+    const precioEnvio = obtenerPrecioEnvio(cartItems); // Suponiendo que tienes una función para calcular el costo de envío
     const total = subtotal + precioEnvio;
 
     // Obtener la información del usuario desde la API
@@ -251,24 +254,25 @@ async function crearFactura(username, cart) {
     }
 
     // Crear la factura en la base de datos
-    const facturaResult = await connection.query('INSERT INTO factura (user_id, email, nombre, ciudad, direccion, documento_identidad, subtotal, precio_envio, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-        [username, user.email, user.nombre, user.ciudad, user.direccion, user.documento_identidad, subtotal, precioEnvio, total]);
+    const [facturaResult] = await connection.query('INSERT INTO factura (user_id, email, nombre, ciudad, direccion, documento_identidad, subtotal, precio_envio, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+        [username, user.email, user.nombre, user.customer_city , user.direccion, user.documento_de_identidad, subtotal, precioEnvio, total]);
 
     // Obtener el ID de la factura creada
     const facturaId = facturaResult.insertId;
 
     // Insertar los productos en la tabla de factura_items
-    for (const item of cart) {
-        await connection.query('INSERT INTO factura_items (factura_id, product_id, name, price, quantity) VALUES (?, ?, ?, ?, ?)', 
-            [facturaId, item.product_id, item.name, item.price, item.quantity]);
+    for (const item of cartItems) {
+        await connection.query('INSERT INTO factura_items (factura_id, product_id, price, quantity) VALUES (?, ?, ?, ?)', 
+            [facturaId, item.producto_id, item.precio, item.cantidad]);
     }
 
     // Vaciar el carrito del usuario y eliminar los items asociados
-    await connection.query('DELETE FROM items_carrito WHERE carrito_id IN (SELECT id FROM carritos WHERE usuario_id = ?)', [username]);
-    await connection.query('DELETE FROM carritos WHERE usuario_id = ?', [username]);
+    await connection.query('DELETE FROM items_carrito WHERE carrito_id = ?', [cartId]);
+    await connection.query('DELETE FROM carritos WHERE id_carrito = ?', [cartId]);
 
-    return { message: 'Factura creada y carrito vaciado correctamente', facturaId };
+    return { message: 'Factura creada y carrito vaciado correctamente', facturaId };
 }
+
 
 async function eliminarDeCarrito(username, productId) {
     try {

@@ -161,37 +161,18 @@ router.post('/carrito/add', async (req, res) => {
 
 
 
-router.post('/factura', async (req, res) => {
+router.post('/factura/crear', async (req, res) => {
+    const { username, cartId } = req.body;
     try {
-        const { username, cart } = req.body;
-
-        if (!username || !Array.isArray(cart) || cart.length === 0) {
-            return res.status(400).json({ message: 'Datos insuficientes: username y cart son requeridos' });
-        }
-
-        const result = await crearFactura(username, cart);
-        res.status(200).json(result);
+        // Llama a la función para crear la factura
+        const response = await carritosModel.crearFactura(username, cartId);
+        res.status(200).json(response);
     } catch (error) {
-        console.error('Error al crear la factura:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
+        res.status(500).json({ error: error.message });
     }
 });
 
-router.post('/factura', async (req, res) => {
-    try {
-        const { username, cart } = req.body;
 
-        if (!username || !Array.isArray(cart) || cart.length === 0) {
-            return res.status(400).json({ message: 'Datos insuficientes: username y cart son requeridos' });
-        }
-
-        const result = await crearFactura(username, cart);
-        res.status(200).json(result);
-    } catch (error) {
-        console.error('Error al crear la factura:', error.message);
-        res.status(500).json({ message: 'Error interno del servidor' });
-    }
-});
 
 router.delete('/carrito/eliminar', async (req, res) => {
     const { username, productId } = req.body;
