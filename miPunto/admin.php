@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #f1f5f9;
@@ -60,7 +60,7 @@
     <div class="container">
         <h1 class="text-center">Panel de Administración</h1>
         <div class="btn-container text-center">
-            <a href="admin.php" class="btn btn-admin">Gestionar Productos</a>
+            <button class="btn btn-admin" data-bs-toggle="modal" data-bs-target="#modalAgregarProducto">Añadir Producto</button>
             <a href="admin-facturas.php" class="btn btn-admin">Ver Facturas</a>
             <a href="logout.php" class="btn btn-danger">Cerrar Sesión</a>
         </div>
@@ -104,87 +104,46 @@
                     echo '<p>No hay productos disponibles.</p>';
                 }
                 ?>
-
-                <!-- Formulario para añadir un nuevo producto -->
-                <h3>Añadir Nuevo Producto</h3>
-                <form action="agregar-producto.php" method="POST">
-                    <div class="mb-3">
-                        <label for="category" class="form-label">Categoría del Producto</label>
-                        <input type="text" class="form-control" id="category" name="category" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Nombre del Producto</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="stock" class="form-label">Stock</label>
-                        <input type="number" class="form-control" id="stock" name="stock" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="price" class="form-label">Precio Unitario (COP)</label>
-                        <input type="number" step="0.01" class="form-control" id="price" name="price" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Añadir Producto</button>
-                </form>
             </div>
         </div>
 
-        <!-- Sección de Facturas -->
-        <div class="card mb-3">
-            <div class="card-header">Facturas Disponibles</div>
-            <div class="card-body">
-                <?php
-                // URL del servicio API para obtener las facturas
-                $facturas_url = "http://localhost:3003/facturas";
-                $curl = curl_init($facturas_url);
-
-                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                $response = curl_exec($curl);
-                curl_close($curl);
-
-                // Decodificar la respuesta JSON en un arreglo
-                $facturas = json_decode($response, true);
-
-                if (is_array($facturas) && count($facturas) > 0) {
-                    echo '<table class="table table-striped">';
-                    echo '<thead><tr>
-                    <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Correo</th>
-                    <th>Nombre</th>
-                    <th>Ciudad</th>
-                    <th>Dirección</th>
-                    <th>Documento Identidad</th>
-                    <th>Subtotal</th>
-                    <th>Precio Envío</th>
-                    <th>Total</th>
-                    <th>Fecha</th>
-                    </tr></thead>';
-                    echo '<tbody>';
-                    foreach ($facturas as $factura) {
-                        echo '<tr>';
-                        echo '<td>' . htmlspecialchars($factura['id_factura']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['user_id']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['email']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['nombre']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['ciudad']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['direccion']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['documento_identidad']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['subtotal']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['precio_envio']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['total']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['fecha']) . '</td>';
-                        echo '</tr>';
-                    }
-                    echo '</tbody>';
-                    echo '</table>';
-                } else {
-                    echo '<p>No hay facturas disponibles.</p>';
-                }
-                ?>
+        <!-- Modal para añadir un nuevo producto -->
+        <div class="modal fade" id="modalAgregarProducto" tabindex="-1" aria-labelledby="modalAgregarProductoLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalAgregarProductoLabel">Añadir Nuevo Producto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="agregar-producto.php" method="POST">
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Categoría del Producto</label>
+                                <input type="text" class="form-control" id="category" name="category" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nombre del Producto</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="stock" class="form-label">Stock</label>
+                                <input type="number" class="form-control" id="stock" name="stock" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="price" class="form-label">Precio Unitario (COP)</label>
+                                <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Añadir Producto</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Scripts necesarios para Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
 
