@@ -146,18 +146,6 @@ router.delete('/carrito/eliminar', async (req, res) => {
 });
 
 
-router.delete('/carrito/eliminar', async (req, res) => {
-    const { carrito_id, product_id } = req.body; // Obtener carrito_id y product_id
-    try {
-        const response = await carritosModel.eliminarDeCarrito(carrito_id, product_id); // Pasar ambos parámetros
-        res.status(200).json(response);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-
-
 
 // Ruta para modificar la cantidad de un producto en el carrito
 router.post('/carrito/actualizar', async (req, res) => {
@@ -178,9 +166,9 @@ router.post('/carrito/actualizar', async (req, res) => {
 
 
 router.delete('/carrito/vaciar', async (req, res) => {
-    const { username } = req.body;
+    const { cartId } = req.body;
     try {
-        const response = await carritosModel.vaciarCarrito(username);
+        const response = await carritosModel.vaciarCarrito(cartId);
         res.status(200).json(response);
     } catch (error) {
         res.status(500).json({ error: error.message });

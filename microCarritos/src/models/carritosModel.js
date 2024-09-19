@@ -229,26 +229,6 @@ async function agregarACarrito(username, product, quantity) {
     }
 }
 
-async function removeFromCart(username, productId) {
-    // Obtener el carrito del usuario
-    const existingCart = await connection.query('SELECT * FROM carritos WHERE username = ?', [username]);
-
-    if (existingCart.length === 0) {
-        throw new Error('El carrito del usuario no existe.');
-    }
-
-    const carritoId = existingCart[0].id;
-
-    // Eliminar el producto del carrito del usuario
-    await connection.query('DELETE FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, productId]);
-
-    // Opcional: Actualizar el subtotal, precio de envío y total del carrito si es necesario
-
-    // Obtener el carrito actualizado
-    const updatedCart = await getCartByUsername(username);
-    
-    return updatedCart;
-}
 
 async function crearFactura(username, cartId) {
     // Obtener los productos del carrito desde la base de datos
@@ -309,6 +289,9 @@ async function eliminarProductoCarrito(username, productId) {
         // Obtener el carrito actualizado (opcional)
         const [updatedCartItems] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ?', [carritoId]);
 
+        // Actualizar el carrito con el nuevo subtotal, valor de envío y total
+        await actualizarCarrito(carritoId, username);
+        
         return {
             message: 'Producto eliminado correctamente',
             items: updatedCartItems
@@ -328,11 +311,23 @@ async function traerFacturas() {
     return result[0];
 }
 async function vaciarCarrito(cartId) {
-    // Eliminar los productos del carrito
-    await connection.query('DELETE FROM items_carrito WHERE carrito_id = ?', [cartId]);
+    try {
+        // Eliminar los productos del carrito
+        await connection.query('DELETE FROM items_carrito WHERE carrito_id = ?', [cartId]);
 
-    return { message: 'Carrito vaciado correctamente' };
+        // Obtener el valor de envío (esto puede ser una constante o un valor calculado)
+        const valorEnvio = 10000; // Ajusta este valor según tus necesidades
+
+        // Actualizar el carrito con subtotal 0 y total igual al precio de envío
+        await connection.query('UPDATE carritos SET subtotal = ?, precioEnvio = ?, total = ? WHERE id_carrito = ?', [0, valorEnvio, valorEnvio, cartId]);
+
+        return { message: 'Carrito vaciado correctamente' };
+    } catch (error) {
+        console.error('Error al vaciar el carrito:', error.message);
+        throw new Error('No se pudo vaciar el carrito.');
+    }
 }
+
 
 async function obtenerItemsCarritoPorUsuario(username) {
     try {
@@ -393,7 +388,6 @@ module.exports = {
     crearFactura,
     traerCarrito,
     traerCarritos,
-    removeFromCart,
     agregarACarrito,
     guardarCarrito,
     createCartIfNotExists,
