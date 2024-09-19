@@ -18,24 +18,7 @@ router.get('/carritos', async (req, res) => {
     res.json(result);
 });
 
-router.get('/carritos/:username', async (req, res) => {
-    const { username } = req.params;
-    console.log(`Buscando carrito para el usuario: ${username}`);
 
-    try {
-        const carrito = await traerCarritoPorUsuario(username);
-        console.log('Carrito encontrado:', carrito); // Esto debería mostrar el objeto del carrito
-
-        if (carrito) {
-            res.json(carrito); // Asegúrate de que esto está enviando un objeto válido
-        } else {
-            res.status(404).json({ message: 'Carrito no encontrado' });
-        }
-    } catch (error) {
-        console.error('Error al obtener el carrito:', error);
-        res.status(500).json({ message: 'Error al obtener el carrito' });
-    }
-});
 
 
 
@@ -94,19 +77,24 @@ router.post('/create', async (req, res) => {
 });
 
 
-router.post('/carrito', async (req, res) => {
+router.get('/carritos/:username', async (req, res) => {
+    const { username } = req.params;
+
     try {
-        const carrito = req.body;
+        const carrito = await carritosModel.traerCarritoPorUsuario(username);
+        console.log('Carrito encontrado:', JSON.stringify(carrito, null, 2)); // Verifica el carrito
 
-        // Validar datos del carrito aquí, si es necesario
-
-        const result = await guardarCarrito(carrito);
-        res.status(201).json({ message: 'Carrito guardado exitosamente', carritoId: result.insertId });
+        if (carrito) {
+            res.json(carrito);
+        } else {
+            res.status(404).json({ message: 'Carrito no encontrado' });
+        }
     } catch (error) {
-        console.error('Error al guardar el carrito:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
+        console.error('Error al obtener el carrito:', error);
+        res.status(500).json({ message: 'Error al obtener el carrito' });
     }
 });
+
 
 router.post('/carrito/add', async (req, res) => {
     try {
