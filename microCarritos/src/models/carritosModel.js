@@ -230,6 +230,8 @@ async function agregarACarrito(username, product, quantity) {
 }
 
 
+
+
 async function crearFactura(username, cartId) {
     // Obtener los productos del carrito desde la base de datos
     const [cartItems] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ?', [cartId]);
@@ -256,10 +258,19 @@ async function crearFactura(username, cartId) {
     // Obtener el ID de la factura creada
     const facturaId = facturaResult.insertId;
 
-    // Insertar los productos en la tabla de factura_items
+    // Insertar los productos en la tabla de factura_items y actualizar el inventario
     for (const item of cartItems) {
         await connection.query('INSERT INTO factura_items (factura_id, product_id, price, quantity) VALUES (?, ?, ?, ?)', 
             [facturaId, item.producto_id, item.precio, item.cantidad]);
+
+        // Actualizar el inventario usando la ruta proporcionada
+        try {
+            await axios.put(`http://localhost:3002/productos/${item.producto_id}`, {
+                product_stock: product_stock -item.cantidad // Restar la cantidad comprada del inventario
+            });
+        } catch (error) {
+            throw new Error(`Error al actualizar el inventario para el producto ${item.producto_id}: ${error.message}`);
+        }
     }
 
     // Vaciar el carrito después de crear la factura
@@ -292,7 +303,6 @@ async function crearFactura(username, cartId) {
         fecha: facturaDetails[0].fecha
     };
 }
-
 
 
 

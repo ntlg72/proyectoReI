@@ -3,6 +3,21 @@ const router = Router();
 const axios = require('axios');
 const usuariosModel = require('../models/usuariosModel');
 
+
+router.post('/usuarios', async (req, res) => {
+    const username = req.body.username;
+    const email = req.body.email;
+    const nombre = req.body.nombre;
+    const password = req.body.password;
+    const customer_city = req.body.customer_city;
+    const direccion = req.body.direccion;
+    const documento_de_identidad = req.body.documento_de_identidad;
+    
+    var result = await usuariosModel.crearUsuario(username,email,nombre,password,customer_city,direccion,documento_de_identidad);
+    res.send("usuario creado");
+});
+
+
 router.get('/usuarios/:username', async (req, res) => {
     const username = req.params.username;
     var result;

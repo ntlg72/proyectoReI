@@ -32,9 +32,131 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Productos</title>
     <link rel="stylesheet" href="styles.css"> <!-- Asegúrate de agregar tu hoja de estilos -->
+    <style>
+        /* Reset básico para asegurar consistencia en navegadores */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: #16a085;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+
+        /* Botón Ver Carrito */
+        .btn-carrito {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-carrito:hover {
+            background-color: #2980b9;
+        }
+
+        /* Contenedor de productos */
+        .productos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+        }
+
+        .producto {
+            background-color: white;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            padding: 20px;
+            width: 250px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+        }
+
+        .producto:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .producto p {
+            font-size: 1rem;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .producto form {
+            margin-top: 10px;
+        }
+
+        .producto label {
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .producto input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            margin-left: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .producto button {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background-color: #16a085;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .producto button:hover {
+            background-color: #1abc9c;
+        }
+
+    </style>
 </head>
 <body>
+
+    <!-- Título de bienvenida -->
     <h1>Bienvenido, <?php echo htmlspecialchars($username); ?></h1>
+
+    <!-- Botón Ver Carrito -->
+    <a href="ver-carrito.php" class="btn-carrito">Ver Carrito</a>
 
     <!-- Mostrar productos -->
     <h2>Productos disponibles</h2>
@@ -56,40 +178,6 @@ if (json_last_error() !== JSON_ERROR_NONE) {
             <p>No hay productos disponibles.</p>
         <?php endif; ?>
     </div>
-
-    <!-- Botón para ver el carrito -->
-    <div>
-        <a href="ver-carrito.php" class="btn-carrito">Ver Carrito</a>
-    </div>
-
-    <style>
-        /* Aquí puedes añadir tu CSS para estilos básicos */
-        .productos {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .producto {
-            border: 1px solid #ccc;
-            padding: 15px;
-            width: 200px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-            text-align: center;
-        }
-        .btn-carrito {
-            margin-top: 20px;
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        .btn-carrito:hover {
-            background-color: #2980b9;
-        }
-    </style>
 
 </body>
 </html>

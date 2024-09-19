@@ -12,8 +12,7 @@ const connection = mysql.createPool({
 
 async function crearUsuario(username,email,nombre,password,customer_city,direccion,documento_de_identidad) {
 
-p
-    const result = await connection.query('INSERT INTO productos VALUES(null,?,?,?,?,?,?)', [username,email,nombre,password,customer_city,direccion,documento_de_identidad]);
+    const result = await connection.query('INSERT INTO usuarios VALUES(?,?,?,?,?,?,?)', [username,email,nombre,password,customer_city,direccion,documento_de_identidad]);
     return result;
 }
 
@@ -31,6 +30,6 @@ async function validarUsuario(username, password) {
 
 
 module.exports = {
-    validarUsuario, traerUsuario
+    crearUsuario, validarUsuario, traerUsuario
 };
 

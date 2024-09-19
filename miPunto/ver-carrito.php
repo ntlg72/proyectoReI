@@ -166,14 +166,12 @@ if (isset($_POST['action']) && $_POST['action'] === 'modificar') {
     }
 }
 
-
 // Función para crear la factura
 if (isset($_POST['action']) && $_POST['action'] === 'facturar') {
     $urlFacturar = "http://localhost:3003/factura/crear";
     
     $data = [
-        'username' => $username,
-        'cartId' => $carrito_id
+        'username' => $username
     ];
     
     $options = [
@@ -189,35 +187,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'facturar') {
     $result = file_get_contents($urlFacturar, false, $context);
     
     if ($result === false) {
-        $error = error_get_last();
-        echo 'Error al crear la factura: ' . $error['message'];
+        echo 'Error al crear la factura';
     } else {
-        $factura = json_decode($result, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            if (isset($factura['id_factura'])) {
-                echo 'Factura creada exitosamente.<br>';
-                echo 'Número de Factura: ' . htmlspecialchars($factura['id_factura']) . '<br>';
-
-                // Mostrar otros detalles de la factura si están disponibles
-                echo 'Usuario: ' . htmlspecialchars($factura['user_id'] ?? 'No disponible') . '<br>';
-                echo 'Email: ' . htmlspecialchars($factura['email'] ?? 'No disponible') . '<br>';
-                echo 'Nombre: ' . htmlspecialchars($factura['nombre'] ?? 'No disponible') . '<br>';
-                echo 'Ciudad: ' . htmlspecialchars($factura['ciudad'] ?? 'No disponible') . '<br>';
-                echo 'Dirección: ' . htmlspecialchars($factura['direccion'] ?? 'No disponible') . '<br>';
-                echo 'Documento de Identidad: ' . htmlspecialchars($factura['documento_identidad'] ?? 'No disponible') . '<br>';
-                echo 'Subtotal: ' . htmlspecialchars($factura['subtotal'] ?? '0') . ' COP<br>';
-                echo 'Precio de Envío: ' . htmlspecialchars($factura['precio_envio'] ?? '0') . ' COP<br>';
-                echo 'Total: ' . htmlspecialchars($factura['total'] ?? '0') . ' COP<br>';
-                echo 'Fecha: ' . htmlspecialchars($factura['fecha'] ?? 'No disponible') . '<br>';
-            } else {
-                echo 'Error: No se recibió el ID de la factura en la respuesta.';
-            }
-        } else {
-            echo 'Error al decodificar la respuesta de la factura: ' . json_last_error_msg();
-        }
+        echo 'Factura creada exitosamente';
+        // Puedes redirigir o mostrar un enlace para descargar la factura si es necesario
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -225,12 +202,116 @@ if (isset($_POST['action']) && $_POST['action'] === 'facturar') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ver Carrito</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Asegúrate de agregar tu hoja de estilos -->
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .carrito {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            background-color: #3498db;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .totales {
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .totales h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .actions {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .actions button {
+            margin-left: 10px;
+        }
+        .empty-cart {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #7f8c8d;
+        }
+        .factura-creada {
+            background-color: #2ecc71;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .carrito-vacio {
+            background-color: #3498db;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Carrito de Compras</h1>
     
-    <h2>Productos en el carrito</h2>
+    <?php
+    // Mostrar mensaje de factura creada si es necesario
+    if (isset($_POST['action']) && $_POST['action'] === 'facturar' && $result !== false) {
+        echo '<div class="factura-creada">¡Factura Creada con Éxito!</div>';
+    }
+    ?>
+
     <div class="carrito">
         <?php if (!empty($carrito['items'])): ?>
             <form action="ver-carrito.php" method="POST">
@@ -264,54 +345,26 @@ if (isset($_POST['action']) && $_POST['action'] === 'facturar') {
                 </table>
             </form>
 
-            <!-- Mostrar subtotal, precio de envío y total -->
             <div class="totales">
-                <h3>Totales</h3>
-                <p>Subtotal: <?php echo isset($carrito['subtotal']) ? htmlspecialchars($carrito['subtotal']) : '0'; ?> COP</p>
-                <p>Precio de Envío: <?php echo isset($carrito['precioEnvio']) ? htmlspecialchars($carrito['precioEnvio']) : '0'; ?> COP</p>
-                <p>Total: <?php echo isset($carrito['total']) ? htmlspecialchars($carrito['total']) : '0'; ?> COP</p>
+                <h3>Resumen del Pedido</h3>
+                <p><strong>Subtotal:</strong> <?php echo isset($carrito['subtotal']) ? htmlspecialchars($carrito['subtotal']) : '0'; ?> COP</p>
+                <p><strong>Precio de Envío:</strong> <?php echo isset($carrito['precioEnvio']) ? htmlspecialchars($carrito['precioEnvio']) : '0'; ?> COP</p>
+                <p><strong>Total:</strong> <?php echo isset($carrito['total']) ? htmlspecialchars($carrito['total']) : '0'; ?> COP</p>
             </div>
 
-            <form action="ver-carrito.php" method="POST">
-                <button type="submit" name="action" value="vaciar">Vaciar Carrito</button>
-                <button type="submit" name="action" value="facturar">Crear Factura</button>
-            </form>
+            <div class="actions">
+                <form action="ver-carrito.php" method="POST">
+                    <button type="submit" name="action" value="vaciar">Vaciar Carrito</button>
+                    <button type="submit" name="action" value="facturar">Crear Factura</button>
+                </form>
+            </div>
 
         <?php else: ?>
-            <p>No hay productos en el carrito.</p>
+            <div class="carrito-vacio">
+                <h2>Tu Carrito está Vacío</h2>
+                <p>¡Agrega algunos productos y comienza a comprar!</p>
+            </div>
         <?php endif; ?>
     </div>
-
-
-    <style>
-        /* Aquí puedes añadir tu CSS para estilos básicos */
-        .carrito {
-            margin-bottom: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        button {
-            padding: 5px 10px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            background-color: #3498db;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-    </style>
 </body>
 </html>
