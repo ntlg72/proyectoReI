@@ -1,24 +1,26 @@
 <?php
-// Encabezados para asegurarse de que PHP siempre devuelva JSON
+session_start();
+// Encabezado para que la respuesta siempre sea en formato JSON
 header('Content-Type: application/json');
 
-// Configura la URL de tu API
+// Configura la URL de tu API de autenticación
 $apiUrl = 'http://localhost:3001/login';
 
-// Lee los datos JSON enviados desde el formulario
-$data = json_decode(file_get_contents('php://input'), true);
+// Lee los datos JSON enviados desde el cliente
+$input = file_get_contents('php://input');
+$data = json_decode($input, true);
 
 // Verifica si los datos fueron decodificados correctamente
 if (!is_array($data) || !isset($data['username']) || !isset($data['password'])) {
-    http_response_code(400);
+    http_response_code(400); // Solicitud inválida
     echo json_encode(['message' => 'Solicitud inválida. Datos JSON no válidos.']);
-    exit;
+    exit();
 }
 
 $username = $data['username'];
 $password = $data['password'];
 
-// Crear el array de datos para enviar a la API
+// Crea el array de datos para enviar a la API
 $postData = [
     'username' => $username,
     'password' => $password
@@ -36,12 +38,12 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 // Ejecuta la solicitud
 $response = curl_exec($ch);
 
-// Manejar errores de cURL
+// Maneja errores de cURL
 if (curl_errno($ch)) {
-    http_response_code(500);
+    http_response_code(500); // Error en el servidor
     echo json_encode(['message' => 'Error en la solicitud: ' . curl_error($ch)]);
     curl_close($ch);
-    exit;
+    exit();
 }
 
 // Cierra cURL
@@ -52,23 +54,18 @@ $result = json_decode($response, true);
 
 // Verifica si la respuesta de la API es válida
 if (!is_array($result)) {
-    http_response_code(502);
+    http_response_code(502); // Error en la puerta de enlace
     echo json_encode(['message' => 'Respuesta inválida de la API.']);
-    exit;
+    exit();
 }
 
-// Verifica si el username es 'admin'
+// Verifica el resultado y gestiona la redirección
+// Simulación de autenticación
 if ($username === 'admin') {
-    // Devuelve una señal en la respuesta JSON para que el frontend pueda manejar la redirección
-    http_response_code(200);
+    $_SESSION['username'] = $username;
     echo json_encode(['message' => 'Login exitoso', 'redirect' => 'admin.php']);
-} elseif (isset($result['cartId'])) {
-    // Enviar una respuesta con éxito (código 200)
-    http_response_code(200);
-    echo json_encode(['message' => 'Login exitoso', 'cartId' => $result['cartId'], 'redirect' => 'usuario.php']);
 } else {
-    // Si hubo un error o credenciales inválidas
-    http_response_code(401);
-    echo json_encode(['message' => $result['message'] ?? 'Credenciales inválidas']);
+    $_SESSION['username'] = $username;
+    echo json_encode(['message' => 'Login exitoso', 'redirect' => 'usuario.php']);
 }
 ?>
