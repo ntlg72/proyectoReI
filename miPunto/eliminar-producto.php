@@ -12,7 +12,7 @@ if (isset($_GET['id'])) {
     curl_close($curl);
 
     if ($response) {
-        header("Location: admin-productos.php");
+        header("Location: admin.php");
     } else {
         echo "Error al eliminar el producto.";
     }

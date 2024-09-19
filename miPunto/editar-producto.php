@@ -33,7 +33,7 @@ if (isset($_GET['id'])) {
         $result = file_get_contents($productos_url, false, $context);
 
         if ($result) {
-            header("Location: admin-productos.php");
+            header("Location: admin.php");
         } else {
             echo "Error al actualizar el producto.";
         }

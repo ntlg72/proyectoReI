@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = file_get_contents($productos_url, false, $context);
 
     if ($result) {
-        header("Location: admin-productos.php");
+        header("Location: admin.php");
     } else {
         echo "Error al añadir el producto.";
     }

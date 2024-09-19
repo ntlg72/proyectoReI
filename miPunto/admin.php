@@ -60,7 +60,7 @@
     <div class="container">
         <h1 class="text-center">Panel de Administración</h1>
         <div class="btn-container text-center">
-            <a href="admin-productos.php" class="btn btn-admin">Gestionar Productos</a>
+            <a href="admin.php" class="btn btn-admin">Gestionar Productos</a>
             <a href="admin-facturas.php" class="btn btn-admin">Ver Facturas</a>
             <a href="logout.php" class="btn btn-danger">Cerrar Sesión</a>
         </div>
@@ -107,7 +107,7 @@
 
                 <!-- Formulario para añadir un nuevo producto -->
                 <h3>Añadir Nuevo Producto</h3>
-                <form action="crear-producto.php" method="POST">
+                <form action="agregar-producto.php" method="POST">
                     <div class="mb-3">
                         <label for="category" class="form-label">Categoría del Producto</label>
                         <input type="text" class="form-control" id="category" name="category" required>
