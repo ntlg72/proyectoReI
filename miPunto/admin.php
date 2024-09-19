@@ -71,7 +71,7 @@
             <div class="card-body">
                 <?php
                 // URL del servicio API para obtener los productos
-                $productos_url = "http://localhost:3002/productos";
+                $productos_url = "http://192.168.100.2:3002/productos";
                 $curl = curl_init($productos_url);
 
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);

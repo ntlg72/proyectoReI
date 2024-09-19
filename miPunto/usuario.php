@@ -10,7 +10,7 @@ if (!isset($_SESSION['username'])) {
 $username = $_SESSION['username'];
 
 // Llamar a la API de productos para obtener la lista de productos
-$urlProductos = "http://localhost:3002/productos"; // URL de tu API de productos
+$urlProductos = "http://192.168.100.2:3002/productos"; // URL de tu API de productos
 $response = file_get_contents($urlProductos);
 
 if ($response === false) {

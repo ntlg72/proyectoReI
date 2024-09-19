@@ -4,7 +4,7 @@ session_start();
 header('Content-Type: application/json');
 
 // Configura la URL de tu API de autenticación
-$apiUrl = 'http://localhost:3001/login';
+$apiUrl = 'http://192.168.100.2:3001/login';
 
 // Lee los datos JSON enviados desde el cliente
 $input = file_get_contents('php://input');

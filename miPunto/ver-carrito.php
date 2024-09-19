@@ -8,7 +8,7 @@ if (!isset($_SESSION['username'])) {
 $username = $_SESSION['username'];
 
 // Reemplazar ':username' con el nombre de usuario en la URL para obtener los items del carrito
-$urlCarritoItems = "http://localhost:3003/carrito/items/" . urlencode($username);
+$urlCarritoItems = "http://192.168.100.2:3003/carrito/items/" . urlencode($username);
 
 // Configurar opciones de contexto para manejo de errores
 $options = [
@@ -45,7 +45,7 @@ if (isset($carritoItems['items']) && !empty($carritoItems['items'])) {
 }
 
 // Ahora llama a la API de carritos para obtener el subtotal, precioEnvio y total utilizando el carrito_id
-$urlCarritoDetails = "http://localhost:3003/carritos/" . urlencode($carrito_id);
+$urlCarritoDetails = "http://192.168.100.2:3003/carritos/" . urlencode($carrito_id);
 $responseDetails = @file_get_contents($urlCarritoDetails, false, $context);
 
 if ($responseDetails === false) {
@@ -72,7 +72,7 @@ $carrito = [
 if (isset($_POST['action']) && $_POST['action'] === 'eliminar') {
     $product_id = $_POST['product_id'];
     
-    $urlEliminar = "http://localhost:3003/carrito/eliminar";
+    $urlEliminar = "http://192.168.100.2:3003/carrito/eliminar";
     
     $data = [
         'username' => $username,
@@ -102,7 +102,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'eliminar') {
 
 // Función para vaciar el carrito
 if (isset($_POST['action']) && $_POST['action'] === 'vaciar') {
-    $urlVaciar = "http://localhost:3003/carrito/vaciar";
+    $urlVaciar = "http://192.168.100.2:3003/carrito/vaciar";
     
     $data = [
         'cartId' => $carrito_id
@@ -138,7 +138,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'modificar') {
         exit();
     }
     
-    $urlModificar = "http://localhost:3003/carrito/actualizar";
+    $urlModificar = "http://192.168.100.2:3003/carrito/actualizar";
     
     $data = [
         'username' => $username,
@@ -168,10 +168,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'modificar') {
 
 // Función para crear la factura
 if (isset($_POST['action']) && $_POST['action'] === 'facturar') {
-    $urlFacturar = "http://localhost:3003/factura/crear";
+    $urlFacturar = "http://192.168.100.2:3003/factura/crear";
     
     $data = [
-        'username' => $username
+        'username' => $username,
+        'cartId' => $carrito_id
     ];
     
     $options = [
@@ -187,10 +188,32 @@ if (isset($_POST['action']) && $_POST['action'] === 'facturar') {
     $result = file_get_contents($urlFacturar, false, $context);
     
     if ($result === false) {
-        echo 'Error al crear la factura';
+        $error = error_get_last();
+        echo 'Error al crear la factura: ' . $error['message'];
     } else {
-        echo 'Factura creada exitosamente';
-        // Puedes redirigir o mostrar un enlace para descargar la factura si es necesario
+        $factura = json_decode($result, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            if (isset($factura['id_factura'])) {
+                echo 'Factura creada exitosamente.<br>';
+                echo 'Número de Factura: ' . htmlspecialchars($factura['id_factura']) . '<br>';
+
+                // Mostrar otros detalles de la factura si están disponibles
+                echo 'Usuario: ' . htmlspecialchars($factura['user_id'] ?? 'No disponible') . '<br>';
+                echo 'Email: ' . htmlspecialchars($factura['email'] ?? 'No disponible') . '<br>';
+                echo 'Nombre: ' . htmlspecialchars($factura['nombre'] ?? 'No disponible') . '<br>';
+                echo 'Ciudad: ' . htmlspecialchars($factura['ciudad'] ?? 'No disponible') . '<br>';
+                echo 'Dirección: ' . htmlspecialchars($factura['direccion'] ?? 'No disponible') . '<br>';
+                echo 'Documento de Identidad: ' . htmlspecialchars($factura['documento_identidad'] ?? 'No disponible') . '<br>';
+                echo 'Subtotal: ' . htmlspecialchars($factura['subtotal'] ?? '0') . ' COP<br>';
+                echo 'Precio de Envío: ' . htmlspecialchars($factura['precio_envio'] ?? '0') . ' COP<br>';
+                echo 'Total: ' . htmlspecialchars($factura['total'] ?? '0') . ' COP<br>';
+                echo 'Fecha: ' . htmlspecialchars($factura['fecha'] ?? 'No disponible') . '<br>';
+            } else {
+                echo 'Error: No se recibió el ID de la factura en la respuesta.';
+            }
+        } else {
+            echo 'Error al decodificar la respuesta de la factura: ' . json_last_error_msg();
+        }
     }
 }
 ?>

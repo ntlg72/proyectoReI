@@ -42,7 +42,7 @@ router.post('/login', async (req, res) => {
     if (user) {
         try {
             // Hacer la solicitud a la API que contiene createCartIfNotExists
-            const response = await axios.post('http://localhost:3003/create', {
+            const response = await axios.post('http://192.168.100.2:3003/create', {
                 username
             });
 
