@@ -132,5 +132,43 @@ router.delete('/carrito/eliminar', async (req, res) => {
     }
 });
 
+router.put('/carrito/actualizar', async (req, res) => {
+    const { carritoId, username } = req.body;
+
+    if (!carritoId || !username) {
+        return res.status(400).json({ message: 'Faltan datos necesarios: carritoId y username' });
+    }
+
+    try {
+        await carritosModel.actualizarCarrito(carritoId, username);
+        res.status(200).json({ message: 'Carrito actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar el carrito:', error.message);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+});
+
+router.delete('/carrito/vaciar', async (req, res) => {
+    const { username } = req.body;
+    try {
+        const response = await carritosModel.vaciarCarrito(username);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta para obtener los ítems del carrito por username
+router.get('/carrito/items/:username', async (req, res) => {
+    const { username } = req.params;
+
+    try {
+        const response = await carritosModel.obtenerItemsCarritoPorUsuario(username);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 module.exports = router;

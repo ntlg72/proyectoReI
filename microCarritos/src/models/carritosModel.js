@@ -317,10 +317,43 @@ async function eliminarDeCarrito(username, productId) {
         throw new Error('No se pudo eliminar el producto del carrito.');
     }
 }
+
 async function traerFacturas() {
     const result = await connection.query('SELECT * FROM factura');
     return result[0];
 }
+async function vaciarCarrito(cartId) {
+    // Eliminar los productos del carrito
+    await connection.query('DELETE FROM items_carrito WHERE carrito_id = ?', [cartId]);
+
+    return { message: 'Carrito vaciado correctamente' };
+}
+
+async function obtenerItemsCarritoPorUsuario(username) {
+    try {
+        console.log('Buscando carrito para el usuario:', username); // Log para verificar el username
+        // Obtener el ID del carrito asociado al usuario
+        const [userCart] = await connection.query('SELECT id_carrito FROM carritos WHERE username = ?', [username]);
+
+        if (userCart.length === 0) {
+            return { message: 'El usuario no tiene un carrito activo', items: [] };
+        }
+
+        const cartId = userCart[0].id_carrito;
+
+        // Obtener los productos del carrito
+        const [cartItems] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ?', [cartId]);
+
+        if (cartItems.length === 0) {
+            return { message: 'El carrito está vacío', items: [] };
+        }
+
+        return { message: 'Items del carrito obtenidos correctamente', items: cartItems };
+    } catch (error) {
+        throw new Error('Error al obtener los items del carrito: ' + error.message);
+    }
+}
+
 
 module.exports = {
     crearFactura,
@@ -334,4 +367,6 @@ module.exports = {
     obtenerPrecioEnvio,
     eliminarDeCarrito,
     traerFacturas,
+    vaciarCarrito,
+    obtenerItemsCarritoPorUsuario,
 };
