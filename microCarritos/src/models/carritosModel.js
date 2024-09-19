@@ -57,6 +57,11 @@ async function traerCarrito(id_carrito) {
     return result[0];
 }
 
+async function traerCarritoPorUsuario(username) {
+    const result = await connection.query('SELECT * FROM carritos WHERE username = ?', [username]);
+    console.log('Resultado de la consulta:', result); // Imprimir el resultado
+    return result[0]; // Asegúrate de que esto esté devolviendo un objeto y no un array vacío
+}
 
 async function traerCarritos() {
     const result = await connection.query('SELECT * FROM carritos');
@@ -381,4 +386,5 @@ module.exports = {
     vaciarCarrito,
     obtenerItemsCarritoPorUsuario,
     modificarCantidadCarrito,
+    traerCarritoPorUsuario,
 };
