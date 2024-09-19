@@ -42,12 +42,12 @@ if (json_last_error() !== JSON_ERROR_NONE) {
         <?php if (!empty($productos)): ?>
             <?php foreach ($productos as $producto): ?>
                 <div class="producto">
-                    <h3><?php echo htmlspecialchars($producto['nombre']); ?></h3>
-                    <p>Precio: <?php echo htmlspecialchars($producto['precio']); ?> COP</p>
+                    <h3><?php echo htmlspecialchars($producto['product_name']); ?></h3>
+                    <p>Precio: <?php echo htmlspecialchars($producto['unit_price_cop']); ?> COP</p>
                     <form action="agregar-carrito.php" method="POST">
-                        <input type="hidden" name="producto_id" value="<?php echo htmlspecialchars($producto['id']); ?>">
-                        <label for="cantidad_<?php echo htmlspecialchars($producto['id']); ?>">Cantidad:</label>
-                        <input type="number" id="cantidad_<?php echo htmlspecialchars($producto['id']); ?>" name="cantidad" value="1" min="1" max="1000">
+                        <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($producto['product_id']); ?>">
+                        <label for="cantidad_<?php echo htmlspecialchars($producto['product_id']); ?>">Cantidad:</label>
+                        <input type="number" id="cantidad_<?php echo htmlspecialchars($producto['product_id']); ?>" name="cantidad" value="1" min="1" max="1000">
                         <button type="submit">Agregar al carrito</button>
                     </form>
                 </div>
