@@ -126,6 +126,25 @@ router.get('/facturas', async (req, res) => {
     res.json(result);
 });
 
+// Controller para eliminar un producto del carrito
+router.delete('/carrito/eliminar', async (req, res) => {
+    const { username, productId } = req.body; // Obtener el username y productId del cuerpo de la solicitud
+
+    try {
+        // Llamar a la función que elimina el producto del carrito
+        const response = await carritosModel.eliminarProductoCarrito(username, productId);
+        
+        // Responder con éxito y los ítems restantes en el carrito
+        res.status(200).json({
+            message: response.message,
+            items: response.items,
+        });
+    } catch (error) {
+        // Enviar un error en caso de que algo falle
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 router.delete('/carrito/eliminar', async (req, res) => {
     const { carrito_id, product_id } = req.body; // Obtener carrito_id y product_id

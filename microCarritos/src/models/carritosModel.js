@@ -283,33 +283,42 @@ async function crearFactura(username, cartId) {
 
 
 async function eliminarProductoCarrito(username, productId) {
-    // Obtener el carrito del usuario
-    const [existingCart] = await connection.query('SELECT * FROM carritos WHERE username = ?', [username]);
+    try {
+        // Obtener el carrito del usuario
+        const [existingCart] = await connection.query('SELECT id_carrito FROM carritos WHERE username = ?', [username]);
 
-    if (!existingCart || existingCart.length === 0) {
-        throw new Error('El carrito del usuario no existe.');
+        if (!existingCart || existingCart.length === 0) {
+            throw new Error('El carrito del usuario no existe.');
+        }
+
+        const carritoId = existingCart[0].id_carrito;
+
+        // Verificar si el producto ya está en el carrito
+        const [existingItem] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, productId]);
+
+        if (!existingItem || existingItem.length === 0) {
+            console.log('Carrito ID:', carritoId);
+            console.log('Product ID:', productId);
+            console.log('Existing Item:', existingItem);
+            throw new Error('El producto no está en el carrito.');
+        }
+
+        // Eliminar el producto del carrito
+        await connection.query('DELETE FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, productId]);
+
+        // Obtener el carrito actualizado (opcional)
+        const [updatedCartItems] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ?', [carritoId]);
+
+        return {
+            message: 'Producto eliminado correctamente',
+            items: updatedCartItems
+        };
+    } catch (error) {
+        console.error('Error al eliminar el producto del carrito:', error.message);
+        throw new Error('No se pudo eliminar el producto del carrito.');
     }
-
-    const carritoId = existingCart[0].id_carrito;
-
-    // Verificar si el producto ya está en el carrito
-    const [existingItem] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, productId]);
-
-    if (!existingItem || existingItem.length === 0) {
-        throw new Error('El producto no está en el carrito.');
-    }
-
-    // Eliminar el producto del carrito
-    await connection.query('DELETE FROM items_carrito WHERE carrito_id = ? AND producto_id = ?', [carritoId, productId]);
-
-    // Obtener el carrito actualizado (opcional)
-    const [updatedCartItems] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ?', [carritoId]);
-
-    return {
-        message: 'Producto eliminado correctamente',
-        items: updatedCartItems
-    };
 }
+
 
 
 
