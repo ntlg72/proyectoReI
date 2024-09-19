@@ -243,6 +243,8 @@ async function crearFactura(username, cartId) {
         throw new Error('No se pudo obtener la información del usuario.');
     }
 
+    const precioEnvio = 10000;
+
     // Calcular el subtotal
     const subtotal = cartItems.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
     const total = subtotal + precioEnvio;
@@ -258,8 +260,40 @@ async function crearFactura(username, cartId) {
     for (const item of cartItems) {
         await connection.query('INSERT INTO factura_items (factura_id, product_id, price, quantity) VALUES (?, ?, ?, ?)', 
             [facturaId, item.producto_id, item.precio, item.cantidad]);
-    }
+    }
+
+    // Vaciar el carrito después de crear la factura
+    try {
+        await vaciarCarrito(cartId);
+    } catch (error) {
+        throw new Error('No se pudo vaciar el carrito después de crear la factura.');
+    }
+
+    // Obtener los detalles de la factura recién creada
+    const [facturaDetails] = await connection.query('SELECT * FROM factura WHERE id_factura = ?', [facturaId]);
+
+    // Verificar el resultado de la consulta
+    if (facturaDetails.length === 0) {
+        throw new Error('No se encontraron detalles para la factura creada.');
+    }
+
+    // Devolver los detalles de la factura como JSON
+    return {
+        id_factura: facturaDetails[0].id_factura,
+        user_id: facturaDetails[0].user_id,
+        email: facturaDetails[0].email,
+        nombre: facturaDetails[0].nombre,
+        ciudad: facturaDetails[0].ciudad,
+        direccion: facturaDetails[0].direccion,
+        documento_identidad: facturaDetails[0].documento_identidad,
+        subtotal: facturaDetails[0].subtotal,
+        precio_envio: facturaDetails[0].precio_envio,
+        total: facturaDetails[0].total,
+        fecha: facturaDetails[0].fecha
+    };
 }
+
+
 
 
 async function eliminarProductoCarrito(username, productId) {
