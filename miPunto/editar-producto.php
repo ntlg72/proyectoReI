@@ -1,7 +1,7 @@
 <?php
 // editar-producto.php
-if (isset($_GET['product_id'])) {
-    $product_id = $_GET['product_id'];
+if (isset($_GET['id'])) {
+    $product_id = $_GET['id'];
     
     // Obtener los datos del producto desde la base de datos o API
     $productos_url = "http://localhost:3002/productos/$product_id";
@@ -24,7 +24,7 @@ if (isset($_GET['product_id'])) {
         $data = array("product_stock" => $nuevo_stock);
         $options = array(
             'http' => array(
-                'header'  => "Content-Type: application/json\r\n",
+                'header'  => "Content-type: application/json\r\n",
                 'method'  => 'PUT',
                 'content' => json_encode($data),
             ),
@@ -32,9 +32,8 @@ if (isset($_GET['product_id'])) {
         $context  = stream_context_create($options);
         $result = file_get_contents($productos_url, false, $context);
 
-        if ($result !== false) {
+        if ($result) {
             header("Location: admin.php");
-            exit;
         } else {
             echo "Error al actualizar el producto.";
         }
