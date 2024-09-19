@@ -135,7 +135,7 @@
             <div class="card-body">
                 <?php
                 // URL del servicio API para obtener las facturas
-                $facturas_url = "http://localhost:300/facturas";
+                $facturas_url = "http://localhost:3003/facturas";
                 $curl = curl_init($facturas_url);
 
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -147,7 +147,19 @@
 
                 if (is_array($facturas) && count($facturas) > 0) {
                     echo '<table class="table table-striped">';
-                    echo '<thead><tr><th>ID</th><th>Cliente</th><th>Fecha</th><th>Total (COP)</th></tr></thead>';
+                    echo '<thead><tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Correo</th>
+                    <th>Nombre</th>
+                    <th>Ciudad</th>
+                    <th>Dirección</th>
+                    <th>Documento Identidad</th>
+                    <th>Subtotal</th>
+                    <th>Precio Envío</th>
+                    <th>Total</th>
+                    <th>Fecha</th>
+                    </tr></thead>';
                     echo '<tbody>';
                     foreach ($facturas as $factura) {
                         echo '<tr>';

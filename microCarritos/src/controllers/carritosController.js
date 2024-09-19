@@ -115,6 +115,11 @@ router.post('/factura/crear', async (req, res) => {
     }
 });
 
+router.get('/facturas', async (req, res) => {
+    var result;
+    result = await carritosModel.traerFacturas();
+    res.json(result);
+});
 
 
 router.delete('/carrito/eliminar', async (req, res) => {

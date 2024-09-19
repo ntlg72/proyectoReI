@@ -317,7 +317,10 @@ async function eliminarDeCarrito(username, productId) {
         throw new Error('No se pudo eliminar el producto del carrito.');
     }
 }
-
+async function traerFacturas() {
+    const result = await connection.query('SELECT * FROM factura');
+    return result[0];
+}
 
 module.exports = {
     crearFactura,
@@ -330,4 +333,5 @@ module.exports = {
     actualizarCarrito,
     obtenerPrecioEnvio,
     eliminarDeCarrito,
+    traerFacturas,
 };
