@@ -166,12 +166,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'modificar') {
     }
 }
 
+
 // Función para crear la factura
 if (isset($_POST['action']) && $_POST['action'] === 'facturar') {
     $urlFacturar = "http://localhost:3003/factura/crear";
     
     $data = [
-        'username' => $username
+        'username' => $username,
+        'cartId' => $carrito_id
     ];
     
     $options = [
@@ -187,14 +189,35 @@ if (isset($_POST['action']) && $_POST['action'] === 'facturar') {
     $result = file_get_contents($urlFacturar, false, $context);
     
     if ($result === false) {
-        echo 'Error al crear la factura';
+        $error = error_get_last();
+        echo 'Error al crear la factura: ' . $error['message'];
     } else {
-        echo 'Factura creada exitosamente';
-        // Puedes redirigir o mostrar un enlace para descargar la factura si es necesario
+        $factura = json_decode($result, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            if (isset($factura['id_factura'])) {
+                echo 'Factura creada exitosamente.<br>';
+                echo 'Número de Factura: ' . htmlspecialchars($factura['id_factura']) . '<br>';
+
+                // Mostrar otros detalles de la factura si están disponibles
+                echo 'Usuario: ' . htmlspecialchars($factura['user_id'] ?? 'No disponible') . '<br>';
+                echo 'Email: ' . htmlspecialchars($factura['email'] ?? 'No disponible') . '<br>';
+                echo 'Nombre: ' . htmlspecialchars($factura['nombre'] ?? 'No disponible') . '<br>';
+                echo 'Ciudad: ' . htmlspecialchars($factura['ciudad'] ?? 'No disponible') . '<br>';
+                echo 'Dirección: ' . htmlspecialchars($factura['direccion'] ?? 'No disponible') . '<br>';
+                echo 'Documento de Identidad: ' . htmlspecialchars($factura['documento_identidad'] ?? 'No disponible') . '<br>';
+                echo 'Subtotal: ' . htmlspecialchars($factura['subtotal'] ?? '0') . ' COP<br>';
+                echo 'Precio de Envío: ' . htmlspecialchars($factura['precio_envio'] ?? '0') . ' COP<br>';
+                echo 'Total: ' . htmlspecialchars($factura['total'] ?? '0') . ' COP<br>';
+                echo 'Fecha: ' . htmlspecialchars($factura['fecha'] ?? 'No disponible') . '<br>';
+            } else {
+                echo 'Error: No se recibió el ID de la factura en la respuesta.';
+            }
+        } else {
+            echo 'Error al decodificar la respuesta de la factura: ' . json_last_error_msg();
+        }
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="es">

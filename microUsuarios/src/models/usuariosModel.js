@@ -10,6 +10,14 @@ const connection = mysql.createPool({
 
 
 
+async function crearUsuario(username,email,nombre,password,customer_city,direccion,documento_de_identidad) {
+
+p
+    const result = await connection.query('INSERT INTO productos VALUES(null,?,?,?,?,?,?)', [username,email,nombre,password,customer_city,direccion,documento_de_identidad]);
+    return result;
+}
+
+
 async function traerUsuario(username) {
     const result = await connection.query('SELECT * FROM usuarios WHERE username = ?', username);
     return result[0];
