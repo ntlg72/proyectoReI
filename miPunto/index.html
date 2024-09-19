@@ -21,13 +21,13 @@
 
     <script>
         const loginForm = document.getElementById('loginForm');
-
+    
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-
+    
             try {
                 const response = await fetch('ingresar.php', {
                     method: 'POST',
@@ -36,31 +36,33 @@
                     },
                     body: JSON.stringify({ username, password })
                 });
-                
-                const result = await response.json();
-                
-                const responseMessage = document.getElementById('responseMessage');
-
-                if (response.ok) {
-                    // Verificar si el usuario es 'admin'
-                    if (username === 'admin') {
-                        responseMessage.textContent = 'Login exitoso. Usuario administrador';
-                    } else if (result.cartId) {
-                        // Si no es 'admin', mostrar el carrito ID
-                        responseMessage.textContent = 'Login exitoso - Carrito ID: ' + result.cartId;
-                        // Redirigir o tomar alguna acción con el carrito ID, si es necesario
+    
+                // Obtener la respuesta en texto
+                const text = await response.text();
+                console.log('Raw response:', text); // Mostrar el texto de la respuesta
+    
+                try {
+                    const result = JSON.parse(text); // Intentar convertir a JSON
+                    console.log('Parsed JSON:', result);
+    
+                    const responseMessage = document.getElementById('responseMessage');
+    
+                    if (result.redirect) {
+                        // Redirigir al usuario si se proporciona una URL
+                        window.location.href = result.redirect;
                     } else {
                         responseMessage.textContent = result.message;
                     }
-                } else {
-                    responseMessage.textContent = result.message;
+                } catch (err) {
+                    console.error('Error parsing JSON:', err);
+                    document.getElementById('responseMessage').textContent = 'Error al analizar la respuesta del servidor';
                 }
+    
             } catch (error) {
                 console.error('Error:', error);
                 document.getElementById('responseMessage').textContent = 'Error al intentar iniciar sesión';
             }
         });
     </script>
-</body>
-</html>
-
+    
+    

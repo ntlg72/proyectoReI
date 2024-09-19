@@ -151,10 +151,17 @@
                     echo '<tbody>';
                     foreach ($facturas as $factura) {
                         echo '<tr>';
-                        echo '<td>' . htmlspecialchars($factura['id']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['cliente']) . '</td>';
-                        echo '<td>' . htmlspecialchars($factura['fecha']) . '</td>';
+                        echo '<td>' . htmlspecialchars($factura['id_factura']) . '</td>';
+                        echo '<td>' . htmlspecialchars($factura['user_id']) . '</td>';
+                        echo '<td>' . htmlspecialchars($factura['email']) . '</td>';
+                        echo '<td>' . htmlspecialchars($factura['nombre']) . '</td>';
+                        echo '<td>' . htmlspecialchars($factura['ciudad']) . '</td>';
+                        echo '<td>' . htmlspecialchars($factura['direccion']) . '</td>';
+                        echo '<td>' . htmlspecialchars($factura['documento_identidad']) . '</td>';
+                        echo '<td>' . htmlspecialchars($factura['subtotal']) . '</td>';
+                        echo '<td>' . htmlspecialchars($factura['precio_envio']) . '</td>';
                         echo '<td>' . htmlspecialchars($factura['total']) . '</td>';
+                        echo '<td>' . htmlspecialchars($factura['fecha']) . '</td>';
                         echo '</tr>';
                     }
                     echo '</tbody>';
@@ -168,6 +175,7 @@
     </div>
 </body>
 </html>
+
 
 
 
