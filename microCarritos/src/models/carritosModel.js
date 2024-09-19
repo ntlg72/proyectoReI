@@ -57,6 +57,11 @@ async function traerCarrito(id_carrito) {
     return result[0];
 }
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> b9d5b36d7f77c9c18da5b30cf4fa534da5bb73f1
 
 async function traerCarritos() {
     const result = await connection.query('SELECT * FROM carritos');
@@ -326,4 +331,10 @@ module.exports = {
     actualizarCarrito,
     eliminarDeCarrito,
     traerFacturas,
+<<<<<<< HEAD
+=======
+    vaciarCarrito,
+    obtenerItemsCarritoPorUsuario,
+    modificarCantidadCarrito,
+>>>>>>> b9d5b36d7f77c9c18da5b30cf4fa534da5bb73f1
 };
