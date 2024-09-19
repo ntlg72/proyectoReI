@@ -18,24 +18,7 @@ router.get('/carritos', async (req, res) => {
     res.json(result);
 });
 
-router.get('/carritos/:username', async (req, res) => {
-    const { username } = req.params;
-    console.log(`Buscando carrito para el usuario: ${username}`);
 
-    try {
-        const carrito = await traerCarritoPorUsuario(username);
-        console.log('Carrito encontrado:', carrito); // Esto debería mostrar el objeto del carrito
-
-        if (carrito) {
-            res.json(carrito); // Asegúrate de que esto está enviando un objeto válido
-        } else {
-            res.status(404).json({ message: 'Carrito no encontrado' });
-        }
-    } catch (error) {
-        console.error('Error al obtener el carrito:', error);
-        res.status(500).json({ message: 'Error al obtener el carrito' });
-    }
-});
 
 
 
