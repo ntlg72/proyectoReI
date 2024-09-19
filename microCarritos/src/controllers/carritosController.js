@@ -133,14 +133,15 @@ router.get('/facturas', async (req, res) => {
 
 
 router.delete('/carrito/eliminar', async (req, res) => {
-    const { username, productId } = req.body;
+    const { carrito_id, product_id } = req.body; // Obtener carrito_id y product_id
     try {
-        const response = await carritosModel.eliminarDeCarrito(username, productId);
+        const response = await carritosModel.eliminarDeCarrito(carrito_id, product_id); // Pasar ambos parámetros
         res.status(200).json(response);
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+        res.status(500).json({ error: error.message });
+    }
 });
+
 
 
 
