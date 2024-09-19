@@ -18,6 +18,11 @@ const connection = mysql.createPool({
 async function createCartIfNotExists(username) {
     console.log('Valor de username:', username); // Verificar si el username es correcto
 
+    // Verificar si el username es "admin" y no permitir la creación del carrito
+    if (username === 'admin') {
+        throw new Error('El usuario "admin" no puede tener un carrito.');
+    }
+
     // Verificar la existencia del usuario a través de la API externa
     try {
         await axios.get(`http://localhost:3001/usuarios/${username}`);
@@ -36,6 +41,7 @@ async function createCartIfNotExists(username) {
 
     return existingCart[0].id_carrito; // Retornar el ID del carrito existente
 }
+
 
 
 
