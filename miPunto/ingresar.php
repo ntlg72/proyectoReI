@@ -8,9 +8,10 @@ $apiUrl = 'http://localhost:3001/login';
 // Lee los datos JSON enviados desde el formulario
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!$data) {
+// Verifica si los datos fueron decodificados correctamente
+if (!is_array($data) || !isset($data['username']) || !isset($data['password'])) {
     http_response_code(400);
-    echo json_encode(['message' => 'Solicitud inválida. No se recibieron datos JSON.']);
+    echo json_encode(['message' => 'Solicitud inválida. Datos JSON no válidos.']);
     exit;
 }
 
@@ -29,7 +30,7 @@ $ch = curl_init($apiUrl);
 // Configura cURL para hacer una solicitud POST
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 
 // Ejecuta la solicitud
@@ -50,7 +51,7 @@ curl_close($ch);
 $result = json_decode($response, true);
 
 // Verifica si la respuesta de la API es válida
-if (!$result) {
+if (!is_array($result)) {
     http_response_code(502);
     echo json_encode(['message' => 'Respuesta inválida de la API.']);
     exit;
@@ -64,7 +65,7 @@ if ($username === 'admin') {
 } elseif (isset($result['cartId'])) {
     // Enviar una respuesta con éxito (código 200)
     http_response_code(200);
-    echo json_encode(['message' => 'Login exitoso', 'cartId' => $result['cartId']]);
+    echo json_encode(['message' => 'Login exitoso', 'cartId' => $result['cartId'], 'redirect' => 'usuario.php']);
 } else {
     // Si hubo un error o credenciales inválidas
     http_response_code(401);

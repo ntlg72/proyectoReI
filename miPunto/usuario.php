@@ -1,176 +1,95 @@
 <?php
-    // URL de los servicios API
-    $vuelos_url = "http://localhost:3002/vuelos";
-    $hoteles_url = "http://localhost:3003/hoteles";
+// Verifica si el usuario ha iniciado sesión
+session_start();
+if (!isset($_SESSION['username'])) {
+    header('Location: ingresar.php');
+    exit();
+}
 
-    // Obtener la lista de vuelos
-    $vuelos_curl = curl_init($vuelos_url);
-    curl_setopt($vuelos_curl, CURLOPT_RETURNTRANSFER, true);
-    $vuelos_response = curl_exec($vuelos_curl);
-    curl_close($vuelos_curl);
+// Obtener el nombre de usuario
+$username = $_SESSION['username'];
 
-    // Obtener la lista de hoteles
-    $hoteles_curl = curl_init($hoteles_url);
-    curl_setopt($hoteles_curl, CURLOPT_RETURNTRANSFER, true);
-    $hoteles_response = curl_exec($hoteles_curl);
-    curl_close($hoteles_curl);
+// Llamar a la API de productos para obtener la lista de productos
+$urlProductos = "http://localhost:3002/productos"; // URL de tu API de productos
+$response = file_get_contents($urlProductos);
 
-    // Decodificar las respuestas JSON
-    $vuelos = json_decode($vuelos_response, true) ?: [];
-    $hoteles = json_decode($hoteles_response, true) ?: [];
+if ($response === false) {
+    die('Error al obtener los productos');
+}
+
+// Decodificar la respuesta JSON
+$productos = json_decode($response, true);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    die('Error al decodificar JSON: ' . json_last_error_msg());
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <title>Planes de Viaje</title>
-    <style>
-        body {
-            background-color: #f0f8ff;
-        }
-        .container {
-            margin-top: 20px;
-        }
-        .table-header {
-            background-color: #007bff;
-            color: white;
-        }
-        .table tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        .btn-custom {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-custom:hover {
-            background-color: #218838;
-        }
-        .btn-logout {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-logout:hover {
-            background-color: #c82333;
-        }
-        .tables-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-        }
-        .table-container {
-            flex: 1;
-        }
-    </style>
+    <title>Productos</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Asegúrate de agregar tu hoja de estilos -->
 </head>
 <body>
-    <div class="container">
-        <a href="logout.php" class="btn btn-logout">Cerrar Sesión</a>
+    <h1>Bienvenido, <?php echo htmlspecialchars($username); ?></h1>
 
-        <h1 class="my-4">Bienvenido a la Planificación de Viajes</h1>
-
-        <div class="tables-container">
-            <!-- Tabla de vuelos -->
-            <div class="table-container">
-                <h2>Vuelos Disponibles</h2>
-                <table class="table table-striped">
-                    <thead class="table-header">
-                        <tr>
-                            <th>ID</th>
-                            <th>Ciudad Origen</th>
-                            <th>Ciudad Destino</th>
-                            <th>Capacidad</th>
-                            <th>Costo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($vuelos as $vuelo): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($vuelo['id']); ?></td>
-                            <td><?php echo htmlspecialchars($vuelo['ciudadOrigen']); ?></td>
-                            <td><?php echo htmlspecialchars($vuelo['ciudadDestino']); ?></td>
-                            <td><?php echo htmlspecialchars($vuelo['capacidad']); ?></td>
-                            <td><?php echo htmlspecialchars($vuelo['costo']); ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Tabla de hoteles -->
-            <div class="table-container">
-                <h2>Hoteles Disponibles</h2>
-                <table class="table table-striped">
-                    <thead class="table-header">
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Ciudad</th>
-                            <th>Capacidad</th>
-                            <th>Costo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($hoteles as $hotel): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($hotel['id']); ?></td>
-                            <td><?php echo htmlspecialchars($hotel['nombre']); ?></td>
-                            <td><?php echo htmlspecialchars($hotel['ciudad']); ?></td>
-                            <td><?php echo htmlspecialchars($hotel['capacidad']); ?></td>
-                            <td><?php echo htmlspecialchars($hotel['costo']); ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="container">
-        <h1 class="text-center">Crear Plan de Viaje</h1>
-
-        <form method="POST" action="crear-plan.php">
-            <div class="mb-3">
-                <label for="usuario" class="form-label">Nombre de Usuario</label>
-                <input type="text" class="form-control" id="usuario" name="usuario" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="vuelo" class="form-label">Selecciona un Vuelo</label>
-                <select id="vuelo" class="form-select" name="vuelo" required>
-                    <option value="">Selecciona un vuelo</option>
-                    <?php foreach ($vuelos as $vuelo): ?>
-                    <option value="<?php echo htmlspecialchars($vuelo['id']); ?>">
-                        <?php echo htmlspecialchars($vuelo['ciudadOrigen']); ?> - <?php echo htmlspecialchars($vuelo['ciudadDestino']); ?>
-                    </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="hotel" class="form-label">Seleccionar Hotel</label>
-                <select class="form-select" id="hotel" name="hotel" required>
-                    <option value="">Selecciona un hotel</option>
-                    <?php foreach ($hoteles as $hotel): ?>
-                        <option value="<?php echo htmlspecialchars($hotel['nombre']); ?>">
-                            <?php echo htmlspecialchars($hotel['nombre']) . " - $" . htmlspecialchars($hotel['costo']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-custom">Crear Plan</button>
-        </form>
-    </div>
+    <!-- Mostrar productos -->
+    <h2>Productos disponibles</h2>
+    <div class="productos">
+        <?php if (!empty($productos)): ?>
+            <?php foreach ($productos as $producto): ?>
+                <div class="producto">
+                    <h3><?php echo htmlspecialchars($producto['nombre']); ?></h3>
+                    <p>Precio: <?php echo htmlspecialchars($producto['precio']); ?> COP</p>
+                    <form action="agregar-carrito.php" method="POST">
+                        <input type="hidden" name="producto_id" value="<?php echo htmlspecialchars($producto['id']); ?>">
+                        <label for="cantidad_<?php echo htmlspecialchars($producto['id']); ?>">Cantidad:</label>
+                        <input type="number" id="cantidad_<?php echo htmlspecialchars($producto['id']); ?>" name="cantidad" value="1" min="1" max="1000">
+                        <button type="submit">Agregar al carrito</button>
+                    </form>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p>No hay productos disponibles.</p>
+        <?php endif; ?>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <!-- Botón para ver el carrito -->
+    <div>
+        <a href="ver_carrito.php" class="btn-carrito">Ver Carrito</a>
+    </div>
+
+    <style>
+        /* Aquí puedes añadir tu CSS para estilos básicos */
+        .productos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .producto {
+            border: 1px solid #ccc;
+            padding: 15px;
+            width: 200px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            text-align: center;
+        }
+        .btn-carrito {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn-carrito:hover {
+            background-color: #2980b9;
+        }
+    </style>
+
 </body>
 </html>
-
-
