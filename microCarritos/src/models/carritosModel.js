@@ -150,30 +150,40 @@ async function obtenerCiudadUsuario(username) {
 
 
 
-async function actualizarCarrito(carritoId, username) {
+async function actualizarCarrito(carritoId) {
     try {
-        // Obtener todos los productos en el carrito
+        // Obtener todos los productos restantes en el carrito
         const [items] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ?', [carritoId]);
+
+        // Si no quedan productos, el subtotal debe ser 0
+        if (items.length === 0) {
+            await connection.query('UPDATE carritos SET subtotal = 0, precioEnvio = 0, total = 0 WHERE id_carrito = ?', [carritoId]);
+            console.log('Carrito vacío, subtotal y total establecidos a 0.');
+            return;
+        }
 
         // Calcular el subtotal
         const subtotal = items.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
 
-        // Obtener la ciudad del usuario para calcular el valor de envío
-        const ciudad = await obtenerCiudadUsuario(username);
-
+        // Valor del envío
+        const valorEnvio = 10000;
 
         // Calcular el total
         const total = subtotal + valorEnvio;
 
         // Actualizar el carrito en la base de datos
-        await connection.query('UPDATE carritos SET subtotal = ?, precioEnvio = ?, total = ? WHERE id_carrito = ?', [subtotal, valorEnvio, total, carritoId]);
+        await connection.query(
+            'UPDATE carritos SET subtotal = ?, precioEnvio = ?, total = ? WHERE id_carrito = ?',
+            [subtotal, valorEnvio, total, carritoId]
+        );
 
-        console.log('Carrito actualizado correctamente');
+        console.log(`Carrito ${carritoId} actualizado: Subtotal: ${subtotal}, Total: ${total}`);
     } catch (error) {
         console.error('Error al actualizar el carrito:', error.message);
         throw new Error('No se pudo actualizar el carrito.');
     }
 }
+
 
 async function agregarACarrito(username, product, quantity) {
     try {
@@ -290,15 +300,18 @@ async function eliminarDeCarrito(carrito_id, product_id) {
             [carrito_id, product_id]
         );
 
+        console.log(`Producto ${product_id} eliminado del carrito ${carrito_id}.`);
+
         // Actualizar el carrito después de la eliminación
         await actualizarCarrito(carrito_id);
 
-        return { message: 'Producto eliminado del carrito' };
+        return { message: 'Producto eliminado del carrito y carrito actualizado' };
     } catch (error) {
         console.error('Error al eliminar el producto del carrito:', error.message);
         throw new Error('No se pudo eliminar el producto del carrito.');
     }
 }
+
 
 
 async function traerFacturas() {
