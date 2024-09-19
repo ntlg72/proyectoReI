@@ -132,21 +132,25 @@ router.delete('/carrito/eliminar', async (req, res) => {
     }
 });
 
-router.put('/carrito/actualizar', async (req, res) => {
-    const { carritoId, username } = req.body;
 
-    if (!carritoId || !username) {
-        return res.status(400).json({ message: 'Faltan datos necesarios: carritoId y username' });
+
+// Ruta para modificar la cantidad de un producto en el carrito
+router.post('/carrito/actualizar', async (req, res) => {
+    const { username, product_id, quantity } = req.body;
+
+    // Validación de entrada
+    if (!username || !product_id || !quantity || quantity <= 0) {
+        return res.status(400).json({ message: 'Parámetros inválidos' });
     }
 
     try {
-        await carritosModel.actualizarCarrito(carritoId, username);
-        res.status(200).json({ message: 'Carrito actualizado correctamente' });
+        const response = await carritosModel.modificarCantidadCarrito(username, product_id, quantity);
+        res.status(200).json(response);
     } catch (error) {
-        console.error('Error al actualizar el carrito:', error.message);
-        res.status(500).json({ message: 'Error interno del servidor' });
+        res.status(500).json({ error: error.message });
     }
 });
+
 
 router.delete('/carrito/vaciar', async (req, res) => {
     const { username } = req.body;
