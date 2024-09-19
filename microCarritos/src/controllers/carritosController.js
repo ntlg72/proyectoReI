@@ -133,4 +133,46 @@ router.delete('/carrito/eliminar', async (req, res) => {
 });
 
 
+
+// Ruta para modificar la cantidad de un producto en el carrito
+router.post('/carrito/actualizar', async (req, res) => {
+    const { username, product_id, quantity } = req.body;
+
+    // Validación de entrada
+    if (!username || !product_id || !quantity || quantity <= 0) {
+        return res.status(400).json({ message: 'Parámetros inválidos' });
+    }
+
+    try {
+        const response = await carritosModel.modificarCantidadCarrito(username, product_id, quantity);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+router.delete('/carrito/vaciar', async (req, res) => {
+    const { username } = req.body;
+    try {
+        const response = await carritosModel.vaciarCarrito(username);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta para obtener los ítems del carrito por username
+router.get('/carrito/items/:username', async (req, res) => {
+    const { username } = req.params;
+
+    try {
+        const response = await carritosModel.obtenerItemsCarritoPorUsuario(username);
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 module.exports = router;
