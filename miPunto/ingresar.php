@@ -1,41 +1,53 @@
 <?php
-    $user = $_POST["usuario"];
-    $pass = $_POST["password"];
+// Configura la URL de tu API
+$apiUrl = 'http://localhost:3001/login';
 
-    $servurl = "http://localhost:3001/login";
+// Lee los datos JSON enviados desde el formulario
+$data = json_decode(file_get_contents('php://input'), true);
 
-    $data = json_encode(array(
-        "username" => $user,
-        "password" => $pass
-    ));
+$username = $data['username'];
+$password = $data['password'];
 
-    $curl = curl_init($servurl);
+// Crear el array de datos para enviar a la API
+$postData = [
+    'username' => $username,
+    'password' => $password
+];
 
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl, CURLOPT_POST, true);
-    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+// Inicializa cURL
+$ch = curl_init($apiUrl);
 
-    $response = curl_exec($curl);
-    curl_close($curl);
+// Configura cURL para hacer una solicitud POST
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 
-    if ($response === false) {
-        header("Location:index.html");
-    }
+// Ejecuta la solicitud
+$response = curl_exec($ch);
 
-    $resp = json_decode($response);
+// Manejar errores
+if (curl_errno($ch)) {
+    echo json_encode(['message' => 'Error en la solicitud: ' . curl_error($ch)]);
+    curl_close($ch);
+    exit;
+}
 
-    if (count($resp) != 0) {
-        session_start();
-        $_SESSION["usuario"] = $user;
-        if ($user == "admin") { 
-            echo "admin";
-            header("Location:admin.php");
-        } else { 
-            echo "usuario";
-            header("Location:usuario.php");
-        } 
-    } else {
-        header("Location:index.html"); 
-    }
+// Cierra cURL
+curl_close($ch);
+
+// Decodifica la respuesta de la API
+$result = json_decode($response, true);
+
+// Verifica si el username es 'admin'
+if ($username === 'admin') {
+    echo json_encode(['message' => 'Login exitoso. Usuario administrador']);
+} elseif (isset($result['cartId'])) {
+    // Responder con éxito si es un cliente
+    echo json_encode(['message' => 'Login exitoso', 'cartId' => $result['cartId']]);
+} else {
+    // Si hubo un error o credenciales inválidas
+    http_response_code(401);
+    echo json_encode(['message' => $result['message'] ?? 'Credenciales inválidas']);
+}
 ?>

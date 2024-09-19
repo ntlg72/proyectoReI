@@ -135,7 +135,7 @@
             <div class="card-body">
                 <?php
                 // URL del servicio API para obtener las facturas
-                $facturas_url = "http://localhost:3005/facturas";
+                $facturas_url = "http://localhost:300/facturas";
                 $curl = curl_init($facturas_url);
 
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);

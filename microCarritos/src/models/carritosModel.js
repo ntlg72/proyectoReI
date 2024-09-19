@@ -35,14 +35,20 @@ async function createCartIfNotExists(username) {
 
     if (existingCart.length === 0) {
         // Crear un nuevo carrito vacío
-        const [result] = await connection.query('INSERT INTO carritos (subtotal, precioEnvio, total, username) VALUES (0, 0, 0, ?)', [username]);
-        return result.insertId; // Retornar el ID del carrito creado
+        try {
+            // Agregar el console.log aquí para verificar el valor de username
+            console.log('Inserting into carritos with username:', username);
+            
+            // Asegúrate de que el campo usuario_id sea del tipo correcto en la base de datos
+            const [result] = await connection.query('INSERT INTO carritos (subtotal, precioEnvio, total, username) VALUES (0, 0, 0, ?)', [username]);
+            return result.insertId; // Retornar el ID del carrito creado
+        } catch (error) {
+            throw new Error('Error al crear el carrito: ' + error.message);
+        }
     }
 
     return existingCart[0].id_carrito; // Retornar el ID del carrito existente
 }
-
-
 
 
 
