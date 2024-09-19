@@ -18,9 +18,9 @@ const connection = mysql.createPool({
 async function createCartIfNotExists(username) {
     console.log('Valor de username:', username); // Verificar si el username es correcto
 
-    // Verificar si el username es "admin" y no permitir la creación del carrito
+    // Permitir que el usuario "admin" se loguee pero no crear un carrito
     if (username === 'admin') {
-        throw new Error('El usuario "admin" no puede tener un carrito.');
+        return null; // No se crea un carrito para el usuario "admin"
     }
 
     // Verificar la existencia del usuario a través de la API externa
@@ -41,6 +41,7 @@ async function createCartIfNotExists(username) {
 
     return existingCart[0].id_carrito; // Retornar el ID del carrito existente
 }
+
 
 
 
