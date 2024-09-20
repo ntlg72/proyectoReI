@@ -2,6 +2,12 @@
 session_start();
 // Encabezado para que la respuesta siempre sea en formato JSON
 header('Content-Type: application/json');
+// Habilitar CORS
+header("Access-Control-Allow-Origin: http://www.mipunto.com.co");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+// Resto de tu código PHP aquí
 
 // Configura la URL de tu API de autenticación
 $apiUrl = 'http://192.168.100.2:3001/login';
