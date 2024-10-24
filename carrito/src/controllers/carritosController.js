@@ -126,6 +126,30 @@ router.get('/facturas', async (req, res) => {
     res.json(result);
 });
 
+// Obtener facturas por ciudad
+router.get('/facturas/ciudad/:ciudad', async (req, res) => {
+    const ciudad = req.params.ciudad;
+    try {
+        const facturas = await carritosModel.traerFacturasCiudad(ciudad);
+        res.json(facturas);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error al obtener las facturas por ciudad');
+    }
+});
+
+// Obtener todas las ciudades disponibles
+router.get('/ciudades', async (req, res) => {
+    try {
+        const ciudades = await carritosModel.traerCiudad(); // Llama a la nueva función para obtener ciudades
+        res.json(ciudades); // Devuelve las ciudades en formato JSON
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error al obtener las ciudades');
+    }
+});
+
+
 // Controller para eliminar un producto del carrito
 router.delete('/carrito/eliminar', async (req, res) => {
     const { username, productId } = req.body; // Obtener el username y productId del cuerpo de la solicitud

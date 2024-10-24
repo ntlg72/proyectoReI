@@ -5,14 +5,17 @@ const connection = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: '',
-    port:'3306',
+    port:'3307',
     database: 'productos_BD'
 });
 
-
-
 async function traerProductos() {
     const result = await connection.query('SELECT * FROM productos');
+    return result[0];
+}
+
+async function traerProductosDesc() {
+    const result = await connection.query('SELECT * FROM productos ORDER BY product_id DESC LIMIT 10');
     return result[0];
 }
 
@@ -21,6 +24,17 @@ async function traerProducto(product_id) {
     const result = await connection.query('SELECT * FROM productos WHERE product_id= ?', product_id);
     return result[0];
 }
+
+async function traerProductosPorCategoria(product_category){
+    const result = await connection.query('SELECT * FROM productos WHERE product_category= ?', product_category);
+    return result[0];
+}
+
+async function traerCategorias() {
+    const result = await connection.query('SELECT DISTINCT product_category FROM productos');
+    return result[0]; // Retorna solo la parte de los resultados que contiene las filas
+}
+
 
 
 async function actualizarProducto(product_id, product_stock) {
@@ -44,5 +58,5 @@ async function borrarProducto(product_id) {
 
 
 module.exports = {
-    traerProductos, traerProducto, actualizarProducto, crearProducto, borrarProducto
+    traerProductos, traerProducto, actualizarProducto, crearProducto, borrarProducto, traerProductosPorCategoria, traerCategorias, traerProductosDesc
 }

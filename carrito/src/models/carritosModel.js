@@ -6,7 +6,7 @@ const connection = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: '',
-    port: '3306',
+    port: '3307',
     database: 'carritos_BD'
 });
 
@@ -25,7 +25,7 @@ async function createCartIfNotExists(username) {
 
     // Verificar la existencia del usuario a través de la API externa
     try {
-        await axios.get(`http://192.168.100.2:3001/usuarios/${username}`);
+        await axios.get(`http://localhost:3001/usuarios/${username}`);
     } catch (error) {
         throw new Error('El usuario no existe o no se pudo verificar la existencia del usuario.');
     }
@@ -69,7 +69,7 @@ async function traerCarritos() {
 //     // Obtener el precio del producto desde la API
 //     let productPrice;
 //     try {
-//         const productoResponse = await axios.get(`http://192.168.100.2:3002/productos/${product.id}`);
+//         const productoResponse = await axios.get(`http://localhost:3002/productos/${product.id}`);
 //         productPrice = productoResponse.data.precio;
 //     } catch (error) {
 //         throw new Error('No se pudo obtener el precio del producto.');
@@ -117,7 +117,7 @@ async function guardarCarrito(carrito) {
         const { producto_id, cantidad } = item;
 
         // Obtener información del producto desde la API
-        const productoResponse = await axios.get(`http://192.168.100.2:3002/productos/${producto_id}`);
+        const productoResponse = await axios.get(`http://localhost:3002/productos/${producto_id}`);
         const producto = productoResponse.data;
 
         // Obtener el precio del producto desde la API
@@ -134,7 +134,7 @@ async function guardarCarrito(carrito) {
 async function obtenerCiudadUsuario(username) {
     // Obtener la información del usuario desde la API o base de datos externa
     try {
-        const usuarioResponse = await axios.get(`http://192.168.100.2:3001/usuarios/${username}`);
+        const usuarioResponse = await axios.get(`http://localhost:3001/usuarios/${username}`);
         const usuario = usuarioResponse.data;
 
         if (!usuario || !usuario.customer_city) {
@@ -188,7 +188,7 @@ async function actualizarCarrito(carritoId) {
 async function agregarACarrito(username, product, quantity) {
     try {
         // Obtener el precio del producto desde la API
-        const productoResponse = await axios.get(`http://192.168.100.2:3002/productos/${product.id}`);
+        const productoResponse = await axios.get(`http://localhost:3002/productos/${product.id}`);
         const productPrice = productoResponse.data.unit_price_cop;
 
         if (!productPrice) {
@@ -237,7 +237,7 @@ async function crearFactura(username, cartId) {
     // Obtener la información del usuario desde la API
     let user;
     try {
-        const userResponse = await axios.get(`http://192.168.100.2:3001/usuarios/${username}`);
+        const userResponse = await axios.get(`http://localhost:3001/usuarios/${username}`);
         user = userResponse.data;
     } catch (error) {
         throw new Error('No se pudo obtener la información del usuario.');
@@ -264,7 +264,7 @@ async function crearFactura(username, cartId) {
         // Obtener el stock actual del producto
         let product;
         try {
-            const productResponse = await axios.get(`http://192.168.100.2:3002/productos/${item.producto_id}`);
+            const productResponse = await axios.get(`http://localhost:3002/productos/${item.producto_id}`);
             product = productResponse.data;
         } catch (error) {
             throw new Error(`Error al obtener el producto ${item.producto_id}: ${error.message}`);
@@ -275,7 +275,7 @@ async function crearFactura(username, cartId) {
 
         // Actualizar el inventario usando la ruta proporcionada
         try {
-            await axios.put(`http://192.168.100.2:3002/productos/${item.producto_id}`, {
+            await axios.put(`http://localhost:3002/productos/${item.producto_id}`, {
                 product_stock: newStock // Enviar el nuevo stock calculado
             });
         } catch (error) {
@@ -357,14 +357,22 @@ async function eliminarProductoCarrito(username, productId) {
     }
 }
 
-
-
-
-
 async function traerFacturas() {
     const result = await connection.query('SELECT * FROM factura');
     return result[0];
 }
+
+async function traerFacturasCiudad(ciudad){
+    const result = await connection.query('SELECT * FROM factura WHERE ciudad= ?', ciudad);
+    return result[0];
+}
+
+async function traerCiudad() {
+    const result = await connection.query('SELECT DISTINCT ciudad FROM factura ');
+    return result[0];
+}
+
+
 async function vaciarCarrito(cartId) {
     try {
         // Eliminar los productos del carrito
@@ -452,4 +460,8 @@ module.exports = {
     vaciarCarrito,
     obtenerItemsCarritoPorUsuario,
     modificarCantidadCarrito,
+    traerFacturasCiudad,
+    traerCiudad
+
+    
 };

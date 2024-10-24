@@ -1,3 +1,39 @@
+<?php
+// Verifica si el usuario ha iniciado sesión
+session_start();
+if (!isset($_SESSION['username'])) {
+    header('Location: ingresar.php');
+    exit();
+}
+
+// Obtener el nombre de usuario
+$username = $_SESSION['username'];
+
+// Llamar a la API de productos para obtener la lista de productos
+$urlProductos = "http://localhost:3002/productos"; // URL de tu API de productos
+$response = file_get_contents($urlProductos);
+
+if ($response === false) {
+    die('Error al obtener los productos');
+}
+
+// Decodificar la respuesta JSON
+$productos = json_decode($response, true);
+
+// Obtener categorías desde la API
+$urlCategorias = "http://localhost:3002/categorias"; // URL de tu API de categorías
+$responseCategorias = file_get_contents($urlCategorias);
+
+if ($responseCategorias === false) {
+    die('Error al obtener las categorías');
+}
+
+$categorias = json_decode($responseCategorias, true);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    die('Error al decodificar JSON: ' . json_last_error_msg());
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -62,26 +98,91 @@
         <div class="btn-container text-center">
             <button class="btn btn-admin" data-bs-toggle="modal" data-bs-target="#modalAgregarProducto">Añadir Producto</button>
             <a href="admin-facturas.php" class="btn btn-admin">Ver Facturas</a>
+            <a href="admin-estadisticas.php" class="btn btn-admin"> Ver Estadísticas</a>
             <a href="logout.php" class="btn btn-danger">Cerrar Sesión</a>
         </div>
+        <!-- Barra de búsqueda por ID -->
+        <div class="mb-3">
+            <form method="post" action="">
+                <label for="searchProductId" class="form-label">Buscar Producto por ID</label>
+                <input type="text" class="form-control" id="searchProductId" name="searchProductId" placeholder="Ingresa el ID del producto" required>
+                <button type="submit" class="btn btn-primary mt-2">Buscar</button>
+            </form>
+        </div>           
+        <?php
+        if (isset($_POST['searchProductId'])) {
+            $product_id = htmlspecialchars($_POST['searchProductId']);
+            
+            // Llamar API para obtener producto
+            $productos_url = "http://localhost:3002/productos/$product_id";
+            $curl = curl_init($productos_url);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($curl);
+            $http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            curl_close($curl);
 
-        <!-- Sección de Productos -->
-        <div class="card mb-3">
-            <div class="card-header">Productos Disponibles</div>
-            <div class="card-body">
-                <?php
-                // URL del servicio API para obtener los productos
-                $productos_url = "http://192.168.100.2:3002/productos";
-                $curl = curl_init($productos_url);
+            // Decodificar la respuesta JSON
+            $producto = json_decode($response, true);
 
-                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                $response = curl_exec($curl);
-                curl_close($curl);
+            // Verifica si el producto fue encontrado
+            if ($http_status == 200 && $producto) {
+                // Mostrar los detalles del producto y agregar botones de Eliminar y Actualizar
+                echo '<div id="searchResult" class="card mb-3">';
+                echo '  <div class="card-header">Resultado de la Búsqueda</div>';
+                echo '  <div class="card-body">';
+                echo '      <p><strong>ID:</strong> ' . htmlspecialchars($producto['product_id']) . '</p>';
+                echo '      <p><strong>Categoría:</strong> ' . htmlspecialchars($producto['product_category']) . '</p>';
+                echo '      <p><strong>Nombre:</strong> ' . htmlspecialchars($producto['product_name']) . '</p>';
+                echo '      <p><strong>Stock:</strong> ' . htmlspecialchars($producto['product_stock']) . '</p>';
+                echo '      <p><strong>Precio Unitario (COP):</strong> ' . htmlspecialchars($producto['unit_price_cop']) . '</p>';
+                echo '      <div class="d-flex justify-content-between">';
+                echo '      <td>
+                                <a href="confirmar-eliminar.php?id=' . htmlspecialchars($producto['product_id']) . '" class="btn btn-sm btn-danger">Eliminar</a>
+                                <a href="editar-producto.php?id=' . htmlspecialchars($producto['product_id']) . '" class="btn btn-sm btn-warning">Editar</a>
+                            </td>';
+                echo '      </div>';
+                echo '  </div>';
+                echo '</div>';
+            } else {
+                // Producto no encontrado
+                echo '<div id="searchResult" class="card mb-3">';
+                echo '  <div class="card-header">Resultado de la Búsqueda</div>';
+                echo '  <div class="card-body">';
+                echo '      <p>Producto no encontrado.</p>';
+                echo '  </div>';
+                echo '</div>';
+            }
+        }
+        ?>
+            <div class="mb-3">
+                <form method="post" action="">
+                    <div class="input-group">
+                        <select class="form-select" id="searchProductCategory" name="selectedCategory" required>
+                            <option value="">Selecciona una categoría</option>
+                            <?php foreach ($categorias as $categoria): ?>
+                                <option value="<?php echo htmlspecialchars($categoria['product_category']); ?>"><?php echo htmlspecialchars($categoria['product_category']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button type="submit" class="btn btn-primary">Buscar</button>
+                    </div>
+                </form>
+            </div>
 
-                // Decodificar la respuesta JSON en un arreglo
+            <?php
+            // Botón para volver a ver todos los productos
+            echo '<div class="mb-3">';
+            echo '<a href="admin.php" class="btn btn-secondary">Ver todos los productos</a>';
+            echo '</div>';
+
+            // Filtrar productos por categoría seleccionada
+            if (isset($_POST['selectedCategory'])) {
+                $selected_category = htmlspecialchars($_POST['selectedCategory']);
+                $productos_url = "http://localhost:3002/productos/categoria/$selected_category"; 
+                $response = file_get_contents($productos_url);
                 $productos = json_decode($response, true);
 
-                if (is_array($productos) && count($productos) > 0) {
+                if ($productos) {
+                    echo '<h2>Productos en la categoría: ' . htmlspecialchars($selected_category) . '</h2>';
                     echo '<table class="table table-striped">';
                     echo '<thead><tr><th>ID</th><th>Categoría</th><th>Nombre</th><th>Stock</th><th>Precio Unitario (COP)</th><th>Acciones</th></tr></thead>';
                     echo '<tbody>';
@@ -93,61 +194,61 @@
                         echo '<td>' . htmlspecialchars($producto['product_stock']) . '</td>';
                         echo '<td>' . htmlspecialchars($producto['unit_price_cop']) . '</td>';
                         echo '<td>
+                                <a href="confirmar-eliminar.php?id=' . htmlspecialchars($producto['product_id']) . '" class="btn btn-sm btn-danger">Eliminar</a>
                                 <a href="editar-producto.php?id=' . htmlspecialchars($producto['product_id']) . '" class="btn btn-sm btn-warning">Editar</a>
-                                <a href="eliminar-producto.php?id=' . htmlspecialchars($producto['product_id']) . '" class="btn btn-sm btn-danger">Eliminar</a>
-                              </td>';
+                            </td>';
                         echo '</tr>';
                     }
                     echo '</tbody>';
                     echo '</table>';
                 } else {
-                    echo '<p>No hay productos disponibles.</p>';
+                    echo '<p>No se encontraron productos en esta categoría.</p>';
                 }
-                ?>
-            </div>
-        </div>
+            } else {
+            ?>
+            <!-- Sección de Productos -->
+            <div class="card mb-3">
+                <div class="card-header">Productos Disponibles</div>
+                <div class="card-body">
+                    <?php
+                    // URL del servicio API para obtener los productos
+                    $productos_url = "http://localhost:3002/productos/desc";
+                    $curl = curl_init($productos_url);
 
-        <!-- Modal para añadir un nuevo producto -->
-        <div class="modal fade" id="modalAgregarProducto" tabindex="-1" aria-labelledby="modalAgregarProductoLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalAgregarProductoLabel">Añadir Nuevo Producto</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form action="agregar-producto.php" method="POST">
-                            <div class="mb-3">
-                                <label for="category" class="form-label">Categoría del Producto</label>
-                                <input type="text" class="form-control" id="category" name="category" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Nombre del Producto</label>
-                                <input type="text" class="form-control" id="name" name="name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="stock" class="form-label">Stock</label>
-                                <input type="number" class="form-control" id="stock" name="stock" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="price" class="form-label">Precio Unitario (COP)</label>
-                                <input type="number" step="0.01" class="form-control" id="price" name="price" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Añadir Producto</button>
-                        </form>
-                    </div>
+                    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                    $response = curl_exec($curl);
+                    curl_close($curl);
+
+                    // Decodificar la respuesta JSON en un arreglo
+                    $productos = json_decode($response, true);
+
+                    if (is_array($productos) && count($productos) > 0) {
+                        echo '<table class="table table-striped">';
+                        echo '<thead><tr><th>ID</th><th>Categoría</th><th>Nombre</th><th>Stock</th><th>Precio Unitario (COP)</th><th>Acciones</th></tr></thead>';
+                        echo '<tbody>';
+                        foreach ($productos as $producto) {
+                            echo '<tr>';
+                            echo '<td>' . htmlspecialchars($producto['product_id']) . '</td>';
+                            echo '<td>' . htmlspecialchars($producto['product_category']) . '</td>';
+                            echo '<td>' . htmlspecialchars($producto['product_name']) . '</td>';
+                            echo '<td>' . htmlspecialchars($producto['product_stock']) . '</td>';
+                            echo '<td>' . htmlspecialchars($producto['unit_price_cop']) . '</td>';
+                            echo '<td>
+                                    <a href="confirmar-eliminar.php?id=' . htmlspecialchars($producto['product_id']) . '" class="btn btn-sm btn-danger">Eliminar</a>
+                                    <a href="editar-producto.php?id=' . htmlspecialchars($producto['product_id']) . '" class="btn btn-sm btn-warning">Editar</a>
+                                </td>';
+                            echo '</tr>';
+                        }
+                        echo '</tbody>';
+                        echo '</table>';
+                    } else {
+                        echo '<p>No se encontraron productos.</p>';
+                    }
+                    ?>
                 </div>
             </div>
-        </div>
-    </div>
+            <?php } ?>
 
-    <!-- Scripts necesarios para Bootstrap -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+
 </body>
 </html>
-
-
-
-
-

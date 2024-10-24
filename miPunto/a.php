@@ -37,16 +37,11 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     die('Error al decodificar JSON: ' . json_last_error_msg());
 }
 
-// Verificar si hay items en el carrito
-$carrito_id = null;
+// Obtener carrito_id de los items
 if (isset($carritoItems['items']) && !empty($carritoItems['items'])) {
     $carrito_id = $carritoItems['items'][0]['carrito_id']; // Asumimos que todos los items pertenecen al mismo carrito
 } else {
-    // Redireccionar a carrito-vacio.php si no hay items
-    header('Location: carrito-vacio.php');
-    exit();
 }
-
 
 // Ahora llama a la API de carritos para obtener el subtotal, precioEnvio y total utilizando el carrito_id
 $urlCarritoDetails = "http://localhost:3003/carritos/" . urlencode($carrito_id);
@@ -384,17 +379,18 @@ if (isset($_POST['action']) && $_POST['action'] === 'facturar') {
                     <button type="submit" name="action" value="vaciar">Vaciar Carrito</button>
                     <button type="submit" name="action" value="facturar">Crear Factura</button>
                     <!-- Agrega el botón para redirigir a usuarios.php -->
-                    <button type="button" onclick="window.location.href='usuario.php'">Volver al Catálogo</button>
+                    <button type="button" onclick="window.location.href='usuario.php'">Volver a Productos</button>
                 </form>
             </div>
 
-        <?php else: ?>
-            <div class="carrito-vacio">
-                <h2>Tu Carrito está Vacío</h2>
-                <p>¡Agrega algunos productos y comienza a comprar!</p>
-            </div>
-        <?php endif; ?>
-    </div>
+            <?php else: ?>
+                <div class="carrito-vacio">
+                    <h2>Tu Carrito está Vacío</h2>
+                    <p>¡Agrega algunos productos y comienza a comprar!</p>
+                    <!-- Agrega el botón para redirigir a usuarios.php en esta sección -->
+                    <a href="usuario.php" class="btn-retroceder">Volver a Productos</a>
+                </div>
+            <?php endif; ?>
+</div>
 </body>
 </html>
-
