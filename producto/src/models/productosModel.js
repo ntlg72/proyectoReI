@@ -43,10 +43,10 @@ async function actualizarProducto(product_id, product_stock) {
 }
 
 
-async function crearProducto(product_category,product_name,product_stock, unit_price_cop) {
+async function crearProducto(product_category,product_name,product_stock, unit_price_cop, product_url) {
 
 
-    const result = await connection.query('INSERT INTO productos VALUES(null,?,?,?,?)', [product_category,product_name,product_stock, unit_price_cop]);
+    const result = await connection.query('INSERT INTO productos VALUES(null,?,?,?,?,?)', [product_category,product_name,product_stock, unit_price_cop, product_url]);
     return result;
 }
 

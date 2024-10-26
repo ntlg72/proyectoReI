@@ -48,8 +48,9 @@ router.post('/productos', async (req, res) => {
     const product_name = req.body.product_name;
     const product_stock = req.body.product_stock;
     const unit_price_cop = req.body.unit_price_cop;
+    const product_url = req.body.product_url;
 
-    var result = await productosModel.crearProducto(product_category,product_name,product_stock, unit_price_cop);
+    var result = await productosModel.crearProducto(product_category,product_name,product_stock, unit_price_cop, product_url);
     res.send("producto creado");
 });
 
