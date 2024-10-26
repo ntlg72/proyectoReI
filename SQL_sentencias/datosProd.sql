@@ -1,4 +1,4 @@
-use productos_BD;  
+USE productos_BD;  
   
 INSERT INTO productos VALUES ('1480', 'Tecnología', 'Smartphone', '48', '209421', 'https://img.freepik.com/vector-gratis/pantalla-realista-smartphone-diferentes-aplicaciones_52683-30241.jpg');
 INSERT INTO productos VALUES ('1597', 'Alimentos', 'Arroz Integral', '80', '3444405', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbJLBI3o26esIT8D4n-6uYDCXRxg-RJEk-gw&s');
