@@ -447,6 +447,17 @@ async function modificarCantidadCarrito(username, productId, cantidad) {
 }
 
 
+/// estadisticas
+
+async function productosMasVendidos() {
+    const result = await connection.query(
+        'SELECT product_id, SUM(quantity) AS total_quantity FROM factura_items GROUP BY product_id ORDER BY total_quantity DESC;'
+    );
+    return result[0];
+}
+
+
+
 module.exports = {
     crearFactura,
     traerCarrito,
@@ -461,7 +472,8 @@ module.exports = {
     obtenerItemsCarritoPorUsuario,
     modificarCantidadCarrito,
     traerFacturasCiudad,
-    traerCiudad
+    traerCiudad,
+    productosMasVendidos
 
     
 };

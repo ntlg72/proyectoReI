@@ -211,5 +211,17 @@ router.get('/carrito/items/:username', async (req, res) => {
     }
 });
 
+/// esatdisticas
+
+router.get('/productosMasVendidos', async (req, res) => {
+    try {
+        const result = await carritosModel.productosMasVendidos();
+        res.json(result);
+    } catch (error) {
+        console.error('Error al obtener los productos más vendidos:', error);
+        res.status(500).send('Error al obtener los productos más vendidos');
+    }
+});
+
 
 module.exports = router;
