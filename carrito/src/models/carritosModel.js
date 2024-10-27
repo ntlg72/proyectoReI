@@ -185,6 +185,7 @@ async function actualizarCarrito(carritoId) {
 }
 
 
+
 async function agregarACarrito(username, product, quantity) {
     try {
         // Obtener el precio del producto desde la API
@@ -416,7 +417,7 @@ async function obtenerItemsCarritoPorUsuario(username) {
         throw new Error('Error al obtener los items del carrito: ' + error.message);
     }
 }
-// Función para modificar la cantidad de un producto en el carrito
+
 async function modificarCantidadCarrito(username, productId, cantidad) {
     // Obtener el carrito del usuario
     const [existingCart] = await connection.query('SELECT * FROM carritos WHERE username = ?', [username]);
@@ -436,6 +437,9 @@ async function modificarCantidadCarrito(username, productId, cantidad) {
 
     // Actualizar la cantidad del producto en el carrito
     await connection.query('UPDATE items_carrito SET cantidad = ? WHERE carrito_id = ? AND producto_id = ?', [cantidad, carritoId, productId]);
+
+    // Llamar a la función actualizarCarrito para recalcular subtotal y total
+    await actualizarCarrito(carritoId);
 
     // Obtener el carrito actualizado (opcional)
     const [updatedCartItems] = await connection.query('SELECT * FROM items_carrito WHERE carrito_id = ?', [carritoId]);
