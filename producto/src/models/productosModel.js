@@ -35,6 +35,10 @@ async function traerCategorias() {
     return result[0]; // Retorna solo la parte de los resultados que contiene las filas
 }
 
+async function traerProductosPorNombre(product_name) {
+    const [rows] = await connection.query('SELECT * FROM productos WHERE product_name = ?', [product_name]);
+    return rows; // Devuelve las filas encontradas
+}
 
 
 async function actualizarProducto(product_id, product_stock) {
@@ -58,5 +62,5 @@ async function borrarProducto(product_id) {
 
 
 module.exports = {
-    traerProductos, traerProducto, actualizarProducto, crearProducto, borrarProducto, traerProductosPorCategoria, traerCategorias, traerProductosDesc
+    traerProductos, traerProducto, actualizarProducto, crearProducto, borrarProducto, traerProductosPorCategoria, traerCategorias, traerProductosDesc, traerProductosPorNombre
 }

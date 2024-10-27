@@ -54,6 +54,23 @@ router.post('/productos', async (req, res) => {
     res.send("producto creado");
 });
 
+router.get('/productos/nombre/:product_name', async (req, res) => {
+    const { product_name } = req.params;
+
+    try {
+        const productos = await traerProductosPorNombre(product_name);
+        
+        if (productos.length > 0) {
+            return res.status(200).json(productos); // Devuelve los productos encontrados
+        } else {
+            return res.status(404).json({ message: 'No se encontraron productos.' }); // Maneja el caso cuando no hay productos
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Error en el servidor.' }); // Manejo de errores
+    }
+});
+
 router.put('/productos/:product_id', async (req, res) => {
     const product_id = req.params.product_id;
     const product_stock = req.body.product_stock;
