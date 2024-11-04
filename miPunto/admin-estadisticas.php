@@ -34,15 +34,17 @@ ini_set('display_errors', 1);
         .card-body {
             background-color: #ffffff;
         }
-        .btn-admin {
-            background-color: #5086c1;
-            color: white;
+        .btn-admin, .btn-danger {
             border-radius: 8px;
             padding: 10px 20px;
             font-size: 14px;
             margin: 10px;
             text-decoration: none;
             display: inline-block;
+        }
+        .btn-admin {
+            background-color: #5086c1;
+            color: white;
         }
         .btn-admin:hover {
             background-color: #0056b3;
@@ -50,12 +52,6 @@ ini_set('display_errors', 1);
         .btn-danger {
             background-color: #dc3545;
             color: white;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 14px;
-            margin: 10px;
-            text-decoration: none;
-            display: inline-block;
         }
         .btn-danger:hover {
             background-color: #c82333;
@@ -65,112 +61,52 @@ ini_set('display_errors', 1);
             justify-content: center;
             margin-bottom: 20px;
         }
-        .form-select {
-            border-radius: 8px;
-        }
         .table th, .table td {
             vertical-align: middle;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            margin-bottom: 40px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .chart-title {
+            font-size: 18px;
+            color: #5086c1;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <h1 class="text-center">Estadisticas</h1>
+    <h1 class="text-center">Estadísticas</h1>
     <div class="btn-container text-center mb-3">
-            <a href="admin.php" class="btn btn-admin"><i class="fas fa-box"></i> Gestionar Productos</a>
-            <a href="logout.php" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+        <a href="admin.php" class="btn btn-admin"><i class="fas fa-box"></i> Gestionar Productos</a>
+        <a href="ventas_por_ciudad.html" class="btn btn-admin"><i class="fas fa-box"></i> Ventas por ciudad</a>
+        <a href="logout.php" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+    </div>
+
+    <div class="container">
+        <div class="chart-container">
+            <h2 class="chart-title text-center">Ventas por Categoría</h2>
+            <img src="ventas_por_categoria.png" alt="Ventas por Categoría" class="img-fluid">
         </div>
-    <canvas id="myChart" style="width: 900px; height: 500px;"></canvas>
-    <script type="text/javascript">
-        // Función para obtener datos de la API REST
-        async function fetchProducts() {
-            try {
-                const response = await fetch('http://localhost:3003/ProductosMasVendidos'); 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        }
-
-        // Función para obtener el nombre del producto por su ID
-        async function fetchProductName(productId) {
-            try {
-                const response = await fetch(`http://localhost:3002/productos/${productId}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const product = await response.json();
-                return product.product_name; // Asegúrate de que el campo se llame 'name'
-            } catch (error) {
-                console.error('Error fetching product name:', error);
-            }
-        }
-
-        // Crear el gráfico después de obtener los datos
-        async function createChart() {
-            const products = await fetchProducts();
-            if (!products) return; // Si no se obtienen productos, no crear el gráfico
-
-            const labels = [];
-            const quantities = [];
-
-            // Obtener nombres de productos en paralelo
-            await Promise.all(products.map(async (product) => {
-                const name = await fetchProductName(product.product_id);
-                labels.push(name);
-                quantities.push(parseInt(product.total_quantity));
-            }));
-
-            const ctx = document.getElementById('myChart').getContext('2d');
-            const myChart = new Chart(ctx, {
-                type: 'bar', // Cambia el tipo a 'horizontalBar' si prefieres
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Cantidad Vendida',
-                        data: quantities,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Cantidad'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Productos'
-                            }
-                        }
-                    },
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Productos Más Vendidos'
-                        }
-                    }
-                }
-            });
-        }
-
-        // Llama a la función para crear el gráfico
-        createChart();
-    </script>
+        <div class="chart-container">
+            <h2 class="chart-title text-center">Distribución de Productos por Rango de Precio</h2>
+            <img src="producto_rango_precio.png" alt="Distribución de Productos por Rango de Precio" class="img-fluid">
+        </div>
+        <div class="chart-container">
+            <h2 class="chart-title text-center">Distribución de Frecuencia de Facturas Creadas</h2>
+            <img src="frecuencia_facturas.png" alt="Distribución de Frecuencia de Facturas" class="img-fluid">
+        </div>
+        <div class="chart-container">
+            <h2 class="chart-title text-center">Top de Productos Más Vendidos</h2>
+            <img src="top_productos.png" alt="Top de Productos Más Vendidos" class="img-fluid">
+        </div>
+    </div>
 </body>
 </html>
-
